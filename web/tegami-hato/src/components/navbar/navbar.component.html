@@ -1,12 +1,16 @@
-<div class="nav">
-  <div class="nav-item">tigami hato</div>
+<div class="container">
+  <div class="nav">
+    <div class="nav-item">tigami hato</div>
     <div class="" *ngIf="!isloggedIn; then notLoggedIn; else loggedIn"></div>
     <ng-template #notLoggedIn>
       <div class="nav-item nav-link push right" routerLink="/login">登录</div>
       <div class="nav-item nav-link right" routerLink="/register">注册</div>
     </ng-template>
     <ng-template #loggedIn>
-      <div class="nav-item nav-link push right" routerLink="/me">欢迎，i@rynco.me</div>
+      <div class="nav-item nav-link push right" routerLink="/me">
+        欢迎，i@rynco.me
+      </div>
       <div class="nav-item nav-link right" routerLink="/follow">我关注的</div>
     </ng-template>
+  </div>
 </div>

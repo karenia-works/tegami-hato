@@ -3,9 +3,10 @@ import { CommonModule } from "@angular/common";
 import { NavbarComponent } from "./navbar/navbar.component";
 import { FooterComponent } from "./footer/footer.component";
 import { RouterModule } from "@angular/router";
+import { SearchbarComponent } from './searchbar/searchbar.component';
 @NgModule({
-  declarations: [NavbarComponent, FooterComponent],
+  declarations: [NavbarComponent, FooterComponent, SearchbarComponent],
   imports: [CommonModule, RouterModule],
-  exports: [NavbarComponent, FooterComponent]
+  exports: [NavbarComponent, FooterComponent, SearchbarComponent]
 })
 export class BaseComponentsModule {}
