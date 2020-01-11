@@ -28,7 +28,7 @@ searchbar-default-accent-color = var(--theme-accent);
     color: var(--searchbar-text-color, searchbar-default-text-color);
     border-style: solid;
     border-width: 2px;
-    border-color: var(--searchbar-border-color, searchbar-default-border-color);
+    border-color: var(--searchbar-accent-color, searchbar-default-accent-color);
     font-family: inherit;
     font-weight: normal;
     font-size: var(--theme-size-base);
@@ -39,7 +39,7 @@ searchbar-default-accent-color = var(--theme-accent);
     }
 
     &:focus-within {
-        border-color: var(--searchbar-accent-color, searchbar-default-accent-color);
+        // border-color: var(--searchbar-accent-color, searchbar-default-accent-color);
     }
 
     input {

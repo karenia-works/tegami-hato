@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { MatIconRegistry, MatIconModule } from '@mdi/angular-material';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
