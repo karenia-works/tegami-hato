@@ -1,0 +1,11 @@
+<div class="container">
+  <h1>我关注的</h1>
+  <div class="list">
+    <div *ngFor="let follow of followList" class="line">
+      <button class="btn item_btn name" routerLink="/g">
+        {{ follow.name }}
+      </button>
+      <button class="btn item_btn op">删除</button>
+    </div>
+  </div>
+</div>

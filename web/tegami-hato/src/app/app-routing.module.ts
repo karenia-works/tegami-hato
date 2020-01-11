@@ -4,6 +4,8 @@ import { MainPageComponent } from "src/pages/main-page/main-page.component";
 import { MainPageModule } from "src/pages/main-page/main-page.module";
 import { GroupPageComponent } from "src/pages/group-page/group-page.component";
 import { GroupPageModule } from "src/pages/group-page/group-page.module";
+import { FollowPageComponent } from "src/pages/follow-page/follow-page.component";
+import { FollowPageModule } from "src/pages/follow-page/follow-page.module";
 
 const routes: Routes = [
   {
@@ -14,10 +16,19 @@ const routes: Routes = [
     path: "g",
     component: GroupPageComponent
   },
+  {
+    path: "follow",
+    component: FollowPageComponent
+  }
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes), MainPageModule,GroupPageModule],
+  imports: [
+    RouterModule.forRoot(routes),
+    MainPageModule,
+    GroupPageModule,
+    FollowPageModule
+  ],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}
