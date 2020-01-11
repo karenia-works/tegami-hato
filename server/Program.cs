@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
+using Karenia.TegamiHato.Server.Services;
 namespace Karenia.TegamiHato.Server
 {
     public class Program
