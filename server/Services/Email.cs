@@ -79,7 +79,7 @@ namespace Karenia.TegamiHato.Server.Services
 
         private string authParam;
 
-        private TimeSpan firstRetrievalOffset = new TimeSpan(hours: 0, minutes: -30, seconds: 0);
+        private TimeSpan firstRetrievalOffset = new TimeSpan(hours: 0, minutes: -15, seconds: 0);
 
         public async void beginEmailLoop()
         {
