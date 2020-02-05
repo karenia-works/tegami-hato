@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Karenia.TegamiHato.Server.Services;
+using Npgsql;
+using Microsoft.EntityFrameworkCore;
 
 namespace Karenia.TegamiHato.Server
 {
@@ -27,14 +29,23 @@ namespace Karenia.TegamiHato.Server
         public void ConfigureServices(IServiceCollection services)
         {
             var domain = Environment.GetEnvironmentVariable("hato_domain");
-            if (domain == null) throw new Exception("API Key not defined. Please define API key as environment variable 'hato_domain'");
+            // if (domain == null) throw new Exception("API Key not defined. Please define API key as environment variable 'hato_domain'");
             var apiKey = Environment.GetEnvironmentVariable("hato_api_key");
-            if (apiKey == null) throw new Exception("API Key not defined. Please define API key as environment variable 'hato_api_key'");
+            // if (apiKey == null) throw new Exception("API Key not defined. Please define API key as environment variable 'hato_api_key'");
 
             services.AddLogging();
+
             services.AddSingleton<EmailRecvService>((srv) => new EmailRecvService(domain, apiKey, srv.GetService<ILogger<EmailRecvService>>()));
+
             services.AddSingleton<EmailSendingService>((srv) => new EmailSendingService(domain, apiKey, srv.GetService<ILogger<EmailSendingService>>()));
+
             services.AddSingleton<MailingChannelService>();
+
+            services.AddDbContext<Models.EmailSystemContext>(
+                options => options.UseNpgsql(
+                   "Host=localhost;Database=hato_db;Username=postgres;Password=postgres"
+                )
+            );
 
             services.AddControllers();
         }
