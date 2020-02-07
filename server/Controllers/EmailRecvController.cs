@@ -8,7 +8,7 @@ namespace Karenia.TegamiHato.Server.Controllers
 {
     [Route("/api/email_recv")]
     [ApiController]
-    public class EmailRecvController
+    public class EmailRecvController : ControllerBase
     {
 
         public async void RecvMail()

@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using NpgsqlTypes;
 using System.Text.RegularExpressions;
+using NUlid;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Marques.EFCore.SnakeCase;
 
 namespace Karenia.TegamiHato.Server.Models
 {
@@ -12,7 +15,7 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoAttachment
     {
-        public Guid AttachmentId { get; set; }
+        public Ulid AttachmentId { get; set; }
         public string Filename { get; set; }
         public string Url { get; set; }
         public string ContentType { get; set; }
@@ -21,14 +24,15 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoMessage
     {
-        public Guid MsgId { get; set; }
+        public Ulid MsgId { get; set; }
 
-        public HatoChannel Channel { get; set; }
+        public HatoChannel _Channel { get; set; }
+        public Ulid ChannelId { get; set; }
 
         public DateTime Timestamp { get; set; }
 
         public string SenderEmail { get; set; }
-        public string SenderNickname { get; set; }
+        public string? SenderNickname { get; set; }
 
         // public List<Address> Receivers { get; set; }
 
@@ -45,11 +49,11 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoChannel
     {
-        public Guid ChannelId { get; set; }
+        public Ulid ChannelId { get; set; }
 
-        public string ChannelUsername { get; set; }
+        public string? ChannelUsername { get; set; }
 
-        public string Title { get; set; }
+        public string ChannelTitle { get; set; }
 
         public ICollection<ChannelUserRelation> _Users { get; set; }
         public ICollection<HatoMessage> _Messages { get; set; }
@@ -57,10 +61,10 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class ChannelUserRelation
     {
-        public Guid UserId { get; set; }
+        public Ulid UserId { get; set; }
         public User _User { get; set; }
 
-        public Guid ChannelId { get; set; }
+        public Ulid ChannelId { get; set; }
         public HatoChannel _Channel { get; set; }
 
         public bool CanSendMessage { get; set; }
@@ -70,7 +74,7 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class User
     {
-        public Guid UserId { get; set; }
+        public Ulid UserId { get; set; }
 
         public string Nickname { get; set; }
 
@@ -83,7 +87,7 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class EmailSystemContext : DbContext
     {
-        public DbSet<HatoMessage> Emails { get; set; }
+        public DbSet<HatoMessage> Messages { get; set; }
         public DbSet<HatoChannel> Channels { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<ChannelUserRelation> ChannelUserTable { get; set; }
@@ -93,47 +97,37 @@ namespace Karenia.TegamiHato.Server.Models
         {
         }
 
+        public static ValueConverter<Ulid, Guid> UlidGuidConverter = new ValueConverter<Ulid, Guid>(
+            ulid => ulid.ToGuid(),
+            guid => new Ulid(guid)
+        );
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            foreach (var entity in modelBuilder.Model.GetEntityTypes())
-            {
-                // Replace table names
-
-                entity.SetTableName(entity.GetTableName().ToSnakeCase());
-
-                // Replace column names            
-                foreach (var property in entity.GetProperties())
-                {
-                    property.SetColumnName(property.GetColumnName().ToSnakeCase());
-                }
-
-                foreach (var key in entity.GetKeys())
-                {
-                    key.SetName(key.GetName().ToSnakeCase());
-                }
-
-                foreach (var index in entity.GetIndexes())
-                {
-                    index.SetName(index.GetName().ToSnakeCase());
-                }
-            }
+            modelBuilder.ToSnakeCase();
 
             modelBuilder.Entity<HatoMessage>().HasKey(x => x.MsgId);
-            modelBuilder.Entity<HatoMessage>().HasOne(x => x.Channel).WithMany(x => x._Messages);
+            modelBuilder.Entity<HatoMessage>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<HatoMessage>().HasOne(x => x._Channel).WithMany(x => x._Messages).HasForeignKey(x => x.ChannelId);
+            modelBuilder.Entity<HatoMessage>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+
 
             modelBuilder.Entity<User>().HasKey(x => x.UserId);
             modelBuilder.Entity<User>().HasIndex(x => x.UserId);
+            modelBuilder.Entity<User>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<User>().HasAlternateKey(x => x.Email);
             modelBuilder.Entity<User>().HasIndex(x => x.Email);
 
             modelBuilder.Entity<HatoChannel>().HasKey(x => x.ChannelId);
             modelBuilder.Entity<HatoChannel>().HasIndex(x => x.ChannelId);
             modelBuilder.Entity<HatoChannel>().HasIndex(x => x.ChannelUsername);
+            modelBuilder.Entity<HatoChannel>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
 
             modelBuilder.Entity<HatoAttachment>().HasKey(x => x.AttachmentId);
             modelBuilder.Entity<HatoAttachment>().HasIndex(x => x.AttachmentId);
+            modelBuilder.Entity<HatoAttachment>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
 
             modelBuilder.Entity<ChannelUserRelation>().HasKey(x => new { x.UserId, x.ChannelId });
             modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => new { x.UserId, x.ChannelId });
@@ -141,6 +135,8 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => x.ChannelId);
             modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._User).WithMany(u => u._Channels).HasForeignKey(u => u.UserId);
             modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._Channel).WithMany(u => u._Users).HasForeignKey(u => u.ChannelId);
+            modelBuilder.Entity<ChannelUserRelation>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<ChannelUserRelation>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
         }
     }
 

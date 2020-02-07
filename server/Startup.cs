@@ -47,6 +47,8 @@ namespace Karenia.TegamiHato.Server
                 )
             );
 
+            services.AddScoped<DatabaseService>();
+
             services.AddControllers();
         }
 

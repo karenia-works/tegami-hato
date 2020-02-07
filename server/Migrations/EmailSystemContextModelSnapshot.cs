@@ -22,11 +22,9 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.ChannelUserRelation", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnName("user_id")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ChannelId")
-                        .HasColumnName("channel_id")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("CanEditRoles")
@@ -55,8 +53,6 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoAttachment", b =>
                 {
                     b.Property<Guid>("AttachmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnName("attachment_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ContentType")
@@ -93,18 +89,15 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoChannel", b =>
                 {
                     b.Property<Guid>("ChannelId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnName("channel_id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ChannelUsername")
+                    b.Property<string>("ChannelTitle")
                         .IsRequired()
-                        .HasColumnName("channel_username")
+                        .HasColumnName("channel_title")
                         .HasColumnType("text");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnName("title")
+                    b.Property<string>("ChannelUsername")
+                        .HasColumnName("channel_username")
                         .HasColumnType("text");
 
                     b.HasKey("ChannelId");
@@ -119,8 +112,6 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoMessage", b =>
                 {
                     b.Property<Guid>("MsgId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnName("msg_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("BodyHtml")
@@ -141,7 +132,6 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("SenderNickname")
-                        .IsRequired()
                         .HasColumnName("sender_nickname")
                         .HasColumnType("text");
 
@@ -158,14 +148,12 @@ namespace Karenia.TegamiHato.Server.Migrations
 
                     b.HasIndex("ChannelId");
 
-                    b.ToTable("emails");
+                    b.ToTable("messages");
                 });
 
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.User", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnName("user_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")
@@ -178,8 +166,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnName("nickname")
                         .HasColumnType("text");
 
-                    b.HasKey("UserId")
-                        .HasName("pk_users");
+                    b.HasKey("UserId");
 
                     b.HasAlternateKey("Email");
 
@@ -195,12 +182,14 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", "_Channel")
                         .WithMany("_Users")
                         .HasForeignKey("ChannelId")
+                        .HasConstraintName("fk_channel_user_table_channels_channel_temp_id1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Karenia.TegamiHato.Server.Models.User", "_User")
                         .WithMany("_Channels")
                         .HasForeignKey("UserId")
+                        .HasConstraintName("fk_channel_user_table_users_user_temp_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -209,14 +198,16 @@ namespace Karenia.TegamiHato.Server.Migrations
                 {
                     b.HasOne("Karenia.TegamiHato.Server.Models.HatoMessage", null)
                         .WithMany("attachments")
-                        .HasForeignKey("HatoMessageMsgId");
+                        .HasForeignKey("HatoMessageMsgId")
+                        .HasConstraintName("fk_attachments_messages_hato_message_temp_id");
                 });
 
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoMessage", b =>
                 {
-                    b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", "Channel")
+                    b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", "_Channel")
                         .WithMany("_Messages")
                         .HasForeignKey("ChannelId")
+                        .HasConstraintName("fk_messages_channels_channel_temp_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
