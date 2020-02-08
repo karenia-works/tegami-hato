@@ -22,7 +22,12 @@ namespace Karenia.TegamiHato.Server.Models
         public long Size { get; set; }
     }
 
-    public class HatoMessage
+    public class HatoMessageAbbr
+    {
+
+    }
+
+    public class HatoMessage : HatoMessageAbbr
     {
         public Ulid MsgId { get; set; }
 
