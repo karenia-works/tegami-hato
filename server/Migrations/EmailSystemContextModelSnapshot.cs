@@ -100,6 +100,10 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnName("channel_username")
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsPublic")
+                        .HasColumnName("is_public")
+                        .HasColumnType("boolean");
+
                     b.HasKey("ChannelId");
 
                     b.HasIndex("ChannelId");

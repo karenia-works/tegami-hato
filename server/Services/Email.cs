@@ -73,7 +73,7 @@ namespace Karenia.TegamiHato.Server.Services
         private ILogger<EmailRecvService> logger;
         private HttpClient client;
 
-        public event Action<EmailRecvEvent> OnEmailRecv;
+        public event Action<EmailRecvEvent>? OnEmailRecv;
 
         private string domain;
 

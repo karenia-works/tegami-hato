@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Karenia.TegamiHato.Server.Migrations
 {
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,7 +13,8 @@ namespace Karenia.TegamiHato.Server.Migrations
                 {
                     ChannelId = table.Column<Guid>(nullable: false),
                     channel_username = table.Column<string>(nullable: true),
-                    channel_title = table.Column<string>(nullable: false)
+                    channel_title = table.Column<string>(nullable: false),
+                    is_public = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -94,17 +95,17 @@ namespace Karenia.TegamiHato.Server.Migrations
                     url = table.Column<string>(nullable: false),
                     content_type = table.Column<string>(nullable: false),
                     size = table.Column<long>(nullable: false),
-                    HatoMessageMsgId = table.Column<Guid>(nullable: true)
+                    _HatoMessageMsgId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_attachments", x => x.AttachmentId);
                     table.ForeignKey(
                         name: "fk_attachments_messages_hato_message_temp_id",
-                        column: x => x.HatoMessageMsgId,
+                        column: x => x._HatoMessageMsgId,
                         principalTable: "messages",
                         principalColumn: "MsgId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -113,9 +114,9 @@ namespace Karenia.TegamiHato.Server.Migrations
                 column: "AttachmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_attachments_HatoMessageMsgId",
+                name: "IX_attachments__HatoMessageMsgId",
                 table: "attachments",
-                column: "HatoMessageMsgId");
+                column: "_HatoMessageMsgId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_channel_user_table_ChannelId",

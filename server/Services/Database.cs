@@ -7,6 +7,7 @@ using System.Linq;
 using NUlid;
 using System.Collections.Generic;
 using Z.EntityFramework.Plus;
+using System.Text.RegularExpressions;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -46,7 +47,7 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="channelName"></param>
         /// <param name="channelTitle"></param>
         /// <returns>Channel ID</returns>
-        public async Task<Ulid> NewMailingChannel(string? channelName, string channelTitle)
+        public async Task<HatoChannel> NewMailingChannel(string? channelName, bool isPublic, string channelTitle)
         {
             var channelId = Ulid.NewUlid();
             var channel = new HatoChannel()
@@ -54,9 +55,11 @@ namespace Karenia.TegamiHato.Server.Services
                 ChannelId = channelId,
                 ChannelUsername = channelName,
                 ChannelTitle = channelTitle,
+                IsPublic = isPublic
             };
             var result = await db.Channels.AddAsync(channel);
-            return channelId;
+            await db.SaveChangesAsync();
+            return channel;
         }
 
         public async Task<User?> GetUserFromEmail(string email)
@@ -67,6 +70,20 @@ namespace Karenia.TegamiHato.Server.Services
         public async Task<HatoChannel?> GetChannelFromUsername(string name)
         {
             return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
+        }
+
+
+        public async Task<bool> ChannelNameExists(string name)
+        {
+            if (Ulid.TryParse(name, out var id))
+            {
+                return await db.Channels.AnyAsync(
+                    ch => ch.ChannelUsername == name || ch.ChannelId == id);
+            }
+            else
+            {
+                return await db.Channels.AnyAsync(ch => ch.ChannelUsername == name);
+            }
         }
 
         public async Task<User?> GetUser(Ulid userId)

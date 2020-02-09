@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using NUlid;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Marques.EFCore.SnakeCase;
+using System.Text.Json.Serialization;
 
 namespace Karenia.TegamiHato.Server.Models
 {
@@ -15,6 +16,7 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoAttachment
     {
+        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid AttachmentId { get; set; }
         public string Filename { get; set; }
         public string Url { get; set; }
@@ -30,9 +32,11 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoMessage : HatoMessageAbbr
     {
+        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid MsgId { get; set; }
 
         public HatoChannel _Channel { get; set; }
+        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid ChannelId { get; set; }
 
         public DateTime Timestamp { get; set; }
@@ -55,11 +59,14 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoChannel
     {
+        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid ChannelId { get; set; }
 
         public string? ChannelUsername { get; set; }
 
         public string ChannelTitle { get; set; }
+
+        public bool IsPublic { get; set; }
 
         public virtual ICollection<ChannelUserRelation> _Users { get; set; }
         public virtual ICollection<HatoMessage> _Messages { get; set; }
@@ -67,6 +74,7 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class ChannelUserRelation
     {
+        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid UserId { get; set; }
         public virtual User _User { get; set; }
 
@@ -80,6 +88,7 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class User
     {
+        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid UserId { get; set; }
 
         public string Nickname { get; set; }

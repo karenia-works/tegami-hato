@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Karenia.TegamiHato.Server.Migrations
 {
     [DbContext(typeof(EmailSystemContext))]
-    [Migration("20200209033322_Fix attachment")]
-    partial class Fixattachment
+    [Migration("20200209084029_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -101,6 +101,10 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.Property<string>("ChannelUsername")
                         .HasColumnName("channel_username")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnName("is_public")
+                        .HasColumnType("boolean");
 
                     b.HasKey("ChannelId");
 

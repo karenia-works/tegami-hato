@@ -5,6 +5,7 @@ using System;
 
 namespace Karenia.TegamiHato.Server.Models
 {
+#pragma warning disable CS8618
     public class MailgunEventList<T>
     {
         public List<T> Items { get; set; }
@@ -76,6 +77,7 @@ namespace Karenia.TegamiHato.Server.Models
         public string Name { get; set; }
         public string ContentType { get; set; }
     }
+#pragma warning restore CS8618
 
     public class DateTimeSerializer : JsonConverter<DateTime>
     {
