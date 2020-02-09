@@ -69,6 +69,16 @@ namespace Karenia.TegamiHato.Server.Services
             return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
         }
 
+        public async Task<User?> GetUser(Ulid userId)
+        {
+            return await db.Users.SingleOrDefaultAsync(u => u.UserId == userId);
+        }
+
+        public async Task<HatoChannel?> GetChannel(Ulid channelId)
+        {
+            return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelId == channelId);
+        }
+
         /// <summary>
         /// Get messages from channel.
         /// 
@@ -127,6 +137,47 @@ namespace Karenia.TegamiHato.Server.Services
             await db.Messages.AddAsync(message);
         }
 
+#nullable disable
+        public class RecentChannelEntry
+        {
+            public HatoChannel channel { get; set; }
+            public string sender { get; set; }
+            public string senderEmail { get; set; }
+            public string latestMessage { get; set; }
+            public DateTime timestamp { get; set; }
+        }
+#nullable restore
+
+        public async Task<IList<RecentChannelEntry>> GetRecentChannels(Ulid userId, int count = 20, int skip = 0)
+        {
+            if (count > MaxResultPerQuery)
+                throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
+
+            return await db
+                .ChannelUserTable
+                .Where(entry => entry.UserId == userId)
+                .Select(entry => new
+                {
+                    channel = entry._Channel,
+                    id = entry._Channel._Messages.Max(message => message.MsgId)
+                })
+                .Join(
+                    db.Messages,
+                    ch => ch.id,
+                    msg => msg.MsgId,
+                    (ch, msg) => new RecentChannelEntry()
+                    {
+                        channel = ch.channel,
+                        sender = msg.SenderNickname,
+                        senderEmail = msg.SenderEmail,
+                        latestMessage = msg.BodyPlain,
+                        timestamp = msg.Timestamp
+                    })
+                .OrderByDescending(ch => ch.timestamp)
+                .Skip(skip)
+                .Take(count)
+                .ToListAsync();
+        }
 
         public async Task<AddResult> AddUserToChannel(Ulid userId, Ulid channelId)
         {
@@ -134,7 +185,7 @@ namespace Karenia.TegamiHato.Server.Services
                 .ChannelUserTable.Where(
                     entry =>
                         entry.UserId == userId && entry.ChannelId == channelId
-                        )
+                )
                 .AnyAsync();
 
             if (userAlreadyInChannel) return AddResult.AlreadyExist;
