@@ -20,6 +20,7 @@ namespace Karenia.TegamiHato.Server.Models
         public string Url { get; set; }
         public string ContentType { get; set; }
         public long Size { get; set; }
+        public virtual HatoMessage _HatoMessage { get; set; }
     }
 
     public class HatoMessageAbbr
@@ -47,7 +48,7 @@ namespace Karenia.TegamiHato.Server.Models
 
         public string? BodyHtml { get; set; }
 
-        public ICollection<HatoAttachment> attachments { get; set; }
+        public virtual ICollection<HatoAttachment> attachments { get; set; }
 
         private NpgsqlTsVector tsvector { get; set; }
     }
@@ -60,17 +61,17 @@ namespace Karenia.TegamiHato.Server.Models
 
         public string ChannelTitle { get; set; }
 
-        public ICollection<ChannelUserRelation> _Users { get; set; }
-        public ICollection<HatoMessage> _Messages { get; set; }
+        public virtual ICollection<ChannelUserRelation> _Users { get; set; }
+        public virtual ICollection<HatoMessage> _Messages { get; set; }
     }
 
     public class ChannelUserRelation
     {
         public Ulid UserId { get; set; }
-        public User _User { get; set; }
+        public virtual User _User { get; set; }
 
         public Ulid ChannelId { get; set; }
-        public HatoChannel _Channel { get; set; }
+        public virtual HatoChannel _Channel { get; set; }
 
         public bool CanSendMessage { get; set; }
         public bool CanReceiveMessage { get; set; }
@@ -85,7 +86,7 @@ namespace Karenia.TegamiHato.Server.Models
 
         public string Email { get; set; }
 
-        public ICollection<ChannelUserRelation> _Channels { get; set; }
+        public virtual ICollection<ChannelUserRelation> _Channels { get; set; }
     }
 
     // Disable initialization warning because we don't need that for now
@@ -133,6 +134,7 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<HatoAttachment>().HasKey(x => x.AttachmentId);
             modelBuilder.Entity<HatoAttachment>().HasIndex(x => x.AttachmentId);
             modelBuilder.Entity<HatoAttachment>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<HatoAttachment>().HasOne(x => x._HatoMessage).WithMany(x => x.attachments);
 
             modelBuilder.Entity<ChannelUserRelation>().HasKey(x => new { x.UserId, x.ChannelId });
             modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => new { x.UserId, x.ChannelId });
