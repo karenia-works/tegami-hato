@@ -35,7 +35,7 @@ namespace Karenia.TegamiHato.Server.Models
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid MsgId { get; set; }
 
-        public HatoChannel _Channel { get; set; }
+        public HatoChannel? _Channel { get; set; }
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid ChannelId { get; set; }
 

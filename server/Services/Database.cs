@@ -11,31 +11,32 @@ using System.Text.RegularExpressions;
 
 namespace Karenia.TegamiHato.Server.Services
 {
+
+    public enum AddResult
+    {
+        Success,
+        AlreadyExist,
+        Forbidden,
+    }
+
+    public enum UpdateResult
+    {
+        Success,
+        NotExist,
+        Forbidden,
+
+        /// <summary>
+        /// This edit operation was intended to operate on one object but multiple was found. 
+        /// Things might go wrong.
+        /// </summary>
+        UnexpectedMultiple,
+    }
+
     public class DatabaseService
     {
         public DatabaseService(EmailSystemContext db)
         {
             this.db = db;
-        }
-
-        public enum AddResult
-        {
-            Success,
-            AlreadyExist,
-            Forbidden,
-        }
-
-        public enum UpdateResult
-        {
-            Success,
-            NotExist,
-            Forbidden,
-
-            /// <summary>
-            /// This edit operation was intended to operate on one object but multiple was found. 
-            /// Things might go wrong.
-            /// </summary>
-            UnexpectedMultiple,
         }
 
         public const int MaxResultPerQuery = 50;
@@ -108,28 +109,28 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="count">Count of message, defaults to 20</param>
         /// <param name="ascending">Whether to get messages in time ascending order; default to false</param>
         /// <returns></returns>
-        public async Task<IList<HatoMessage>> GetMessageFromChannel(Ulid channelId, Ulid start, int count = 20, bool ascending = false)
+        public IAsyncEnumerable<HatoMessage> GetMessageFromChannel(Ulid channelId, Ulid start, int count = 20, bool ascending = false)
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
             if (ascending)
-                return await db.Messages
+                return db.Messages
                     .Where(
                         message =>
                             (message.ChannelId == channelId)
                             && (message.MsgId.CompareTo(start) > 0))
                     .Take(count)
                     .OrderBy(message => message.MsgId)
-                    .ToListAsync();
+                    .AsAsyncEnumerable();
             else
-                return await db.Messages
+                return db.Messages
                     .Where(
                         message => (message.ChannelId == channelId)
                         && (message.MsgId.CompareTo(start) < 0)
                     )
                     .Take(count)
                     .OrderByDescending(message => message.MsgId)
-                    .ToListAsync();
+                    .AsAsyncEnumerable();
         }
 
         public async Task SaveMessageIntoChannel(HatoMessage message)
@@ -152,6 +153,7 @@ namespace Karenia.TegamiHato.Server.Services
             }
 
             await db.Messages.AddAsync(message);
+            await db.SaveChangesAsync();
         }
 
 #nullable disable
@@ -165,12 +167,12 @@ namespace Karenia.TegamiHato.Server.Services
         }
 #nullable restore
 
-        public async Task<IList<RecentChannelEntry>> GetRecentChannels(Ulid userId, int count = 20, int skip = 0)
+        public IAsyncEnumerable<RecentChannelEntry> GetRecentChannels(Ulid userId, int count = 20, int skip = 0)
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
 
-            return await db
+            return db
                 .ChannelUserTable
                 .Where(entry => entry.UserId == userId)
                 .Select(entry => new
@@ -193,7 +195,7 @@ namespace Karenia.TegamiHato.Server.Services
                 .OrderByDescending(ch => ch.timestamp)
                 .Skip(skip)
                 .Take(count)
-                .ToListAsync();
+                .AsAsyncEnumerable();
         }
 
         public async Task<AddResult> AddUserToChannel(Ulid userId, Ulid channelId)
@@ -237,14 +239,14 @@ namespace Karenia.TegamiHato.Server.Services
             return UpdateResult.Success;
         }
 
-        public async Task<IList<User>> GetReceivers(Ulid channelId)
+        public IAsyncEnumerable<User> GetReceivers(Ulid channelId)
         {
-            var result = await db
+            var result = db
                 .ChannelUserTable
                 .Where(entry => entry.ChannelId == channelId && entry.CanReceiveMessage)
                 .IncludeOptimized(entry => entry._User)
                 .Select(entry => entry._User)
-                .ToListAsync();
+                .AsAsyncEnumerable();
 
             return result;
         }

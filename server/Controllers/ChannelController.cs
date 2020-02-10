@@ -44,34 +44,105 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetChannel(
-            [FromQuery] string? name = null,
-            [FromQuery] string? id = null)
+        [Route("{id}")]
+        public async Task<IActionResult> GetChannel([FromRoute] string id)
         {
             // throws exception on error
             Ulid? _id;
-            {
-                if (id != null)
-                    if (Ulid.TryParse(id, out var res)) _id = res;
-                    else return BadRequest($"'{id}' is not a valid Ulid");
-                else _id = null;
-            }
+            { if (Ulid.TryParse(id, out var res)) _id = res; else _id = null; }
+            var name = id;
 
             if (_id != null)
             {
                 var res = await this._db.GetChannel(_id.Value);
-                if (res != null)
-                    if (name != null && res.ChannelUsername == name) return Ok(res);
-                if (name == null) return Ok(res);
+                if (res != null) return Ok(res);
                 else return NotFound();
             }
-            else if (name != null)
+            else
             {
                 var res = await this._db.GetChannelFromUsername(name);
                 if (res != null) return Ok(res);
                 else return NotFound();
             }
-            else return BadRequest(new ErrorResult("Either name or id should be set"));
+        }
+
+        [HttpPost]
+        [Route("{id}/join")]
+        public async Task<IActionResult> JoinChannel(
+            [FromRoute] string id,
+            [FromQuery] string userId
+        )
+        {
+            if (Ulid.TryParse(id, out var _channelId))
+            {
+                if (Ulid.TryParse(userId, out var _userId))
+                {
+                    var result = await this._db.AddUserToChannel(_userId, _channelId);
+                    switch (result)
+                    {
+                        case AddResult.Success:
+                            return NoContent();
+                        case AddResult.AlreadyExist:
+                            return BadRequest(new ErrorResult(
+                                "resource already exists",
+                                "The user has already been in the channel"
+                            ));
+                        default:
+                            return BadRequest();
+                    }
+                }
+                else
+                {
+                    return BadRequest(new ErrorResult(
+                        "not deserialized", $"'{userId}' is not a valid Ulid"));
+                }
+            }
+            else
+            {
+                return BadRequest(new ErrorResult(
+                    "not deserialized", $"'{id}' is not a valid Ulid"));
+            }
+        }
+
+        [HttpPost]
+        [Route("{id}/message")]
+        public async Task<IActionResult> SendMessage(
+            [FromRoute] string id,
+            [FromBody] HatoMessage message
+        )
+        {
+            if (!Ulid.TryParse(id, out var _id)) return BadRequest();
+            await this._db.SaveMessageIntoChannel(message, _id);
+            return Ok();
+        }
+
+
+        [HttpGet]
+        [Route("{id}/message")]
+        public IActionResult GetRecentMessage(
+            [FromRoute] string id,
+             string startId = "7fffffffffffffffffffffffff",
+             int count = 20,
+             bool ascending = false
+        )
+        {
+            if (Ulid.TryParse(id, out var _id))
+            {
+                if (Ulid.TryParse(startId, out var _startId))
+                {
+                    return Ok(this._db.GetMessageFromChannel(_id, _startId, count, ascending));
+                }
+                else
+                {
+                    return BadRequest(new ErrorResult(
+                        "not deserialized", $"'{startId}' is not a valid Ulid"));
+                }
+            }
+            else
+            {
+                return BadRequest(new ErrorResult(
+                    "not deserialized", $"'{id}' is not a valid Ulid"));
+            }
         }
     }
 }
