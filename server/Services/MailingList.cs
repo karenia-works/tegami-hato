@@ -10,15 +10,19 @@ using System.Text;
 
 namespace Karenia.TegamiHato.Server.Services
 {
+    [Obsolete]
     public class MailingChannelService
     {
-        public MailingChannelService(EmailSendingService sendService, EmailRecvService recvService, ILogger<MailingChannelService> logger)
+        public MailingChannelService(
+            EmailSendingService sendService,
+            EmailRecvService recvService,
+            ILogger<MailingChannelService> logger)
         {
             this.sendService = sendService;
             this.recvService = recvService;
             this.logger = logger;
             recvService.OnEmailRecv += this.dealWithChannel;
-            recvService.beginEmailLoop();
+            recvService.BeginEmailLoop();
         }
 
         private readonly ILogger<MailingChannelService> logger;

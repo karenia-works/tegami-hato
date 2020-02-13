@@ -73,6 +73,17 @@ namespace Karenia.TegamiHato.Server.Services
             return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
         }
 
+        public async Task<HatoChannel?> GetChannelFromUsernameOrId(string name)
+        {
+            if (Ulid.TryParse(name, out var id))
+                return await db
+                    .Channels
+                    .SingleOrDefaultAsync(
+                        ch => ch.ChannelId == id
+                            || ch.ChannelUsername == name);
+            else
+                return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
+        }
 
         public async Task<bool> ChannelNameExists(string name)
         {

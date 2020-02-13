@@ -31,6 +31,18 @@ namespace Karenia.TegamiHato.Server
         {
             services.AddLogging();
 
+            // * Database
+            services.AddDbContext<Models.EmailSystemContext>(
+                options => options.UseNpgsql(
+                   "Host=localhost;Database=hato_db;Username=postgres;Password=postgres"
+                )
+            );
+
+            services.BuildServiceProvider().GetService<Models.EmailSystemContext>().Database.Migrate();
+
+            services.AddScoped<DatabaseService>();
+
+            // * Email service
             var domain = Environment.GetEnvironmentVariable("hato_domain");
             var apiKey = Environment.GetEnvironmentVariable("hato_api_key");
             if (domain == null)
@@ -44,17 +56,8 @@ namespace Karenia.TegamiHato.Server
 
                 services.AddSingleton<EmailSendingService>((srv) => new EmailSendingService(domain, apiKey, srv.GetService<ILogger<EmailSendingService>>()));
 
-                services.AddSingleton<MailingChannelService>();
+                services.AddSingleton<EmailRecvAdaptor>();
             }
-
-            services.AddDbContext<Models.EmailSystemContext>(
-                options => options.UseNpgsql(
-                   "Host=localhost;Database=hato_db;Username=postgres;Password=postgres"
-                )
-            );
-            services.BuildServiceProvider().GetService<Models.EmailSystemContext>().Database.Migrate();
-
-            services.AddScoped<DatabaseService>();
 
             services.AddControllers();
         }

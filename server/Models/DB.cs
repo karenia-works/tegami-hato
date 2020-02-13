@@ -8,6 +8,10 @@ using NUlid;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Marques.EFCore.SnakeCase;
 using System.Text.Json.Serialization;
+using FluentEmail.Core.Models;
+using System.Linq;
+using Karenia.TegamiHato.Server.Services;
+using System.Threading.Tasks;
 
 namespace Karenia.TegamiHato.Server.Models
 {
@@ -36,6 +40,7 @@ namespace Karenia.TegamiHato.Server.Models
         public Ulid MsgId { get; set; }
 
         public HatoChannel? _Channel { get; set; }
+
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid ChannelId { get; set; }
 
@@ -54,7 +59,40 @@ namespace Karenia.TegamiHato.Server.Models
 
         public virtual ICollection<HatoAttachment> attachments { get; set; }
 
-        private NpgsqlTsVector tsvector { get; set; }
+        [JsonIgnore]
+        public NpgsqlTsVector tsvector { get; set; }
+
+        public async Task<EmailData> ToEmailData(EmailRecvService recvService)
+        {
+            var data = new EmailData();
+
+            data.FromAddress = new Address(
+                $"{_Channel?.ChannelUsername ?? this.ChannelId.ToString()}@{recvService.Domain}",
+                _Channel?.ChannelTitle);
+
+            if (BodyHtml != null)
+            {
+                data.IsHtml = true;
+                data.Body = BodyHtml;
+                data.PlaintextAlternativeBody = BodyPlain;
+            }
+            else
+            {
+                data.IsHtml = false;
+                data.Body = BodyPlain;
+                data.PlaintextAlternativeBody = null;
+            }
+            data.Attachments = (await Task.WhenAll(
+                attachments
+                .Select(async att => new Attachment()
+                {
+                    Filename = att.Filename,
+                    ContentId = att.AttachmentId.ToString(),
+                    ContentType = att.ContentType,
+                    Data = await recvService.GetAttachment(att.Url)
+                }))).ToList();
+            return data;
+        }
     }
 
     public class HatoChannel
