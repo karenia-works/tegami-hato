@@ -31,11 +31,6 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoMessageAbbr
     {
-
-    }
-
-    public class HatoMessage : HatoMessageAbbr
-    {
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid MsgId { get; set; }
 
@@ -54,6 +49,10 @@ namespace Karenia.TegamiHato.Server.Models
         public string Title { get; set; }
 
         public string BodyPlain { get; set; }
+    }
+
+    public class HatoMessage : HatoMessageAbbr
+    {
 
         public string? BodyHtml { get; set; }
 
@@ -159,13 +158,15 @@ namespace Karenia.TegamiHato.Server.Models
         {
             base.OnModelCreating(modelBuilder);
 
+
             modelBuilder.ToSnakeCase();
 
             modelBuilder.Entity<HatoMessage>().HasKey(x => x.MsgId);
             modelBuilder.Entity<HatoMessage>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<HatoMessage>().HasOne(x => x._Channel).WithMany(x => x._Messages).HasForeignKey(x => x.ChannelId);
             modelBuilder.Entity<HatoMessage>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
-
+            modelBuilder.Entity<HatoMessage>().HasIndex(x => x.MsgId);
+            modelBuilder.Entity<HatoMessage>().HasIndex(x => x.tsvector).HasMethod("GIN");
 
             modelBuilder.Entity<User>().HasKey(x => x.UserId);
             modelBuilder.Entity<User>().HasIndex(x => x.UserId);
