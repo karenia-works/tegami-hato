@@ -155,7 +155,7 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="message"></param>
         /// <param name="channelId"></param>
         /// <returns></returns>
-        public async Task SaveMessageIntoChannel(HatoMessage message, Ulid channelId)
+        public async Task<Ulid> SaveMessageIntoChannel(HatoMessage message, Ulid channelId)
         {
             message.MsgId = Ulid.NewUlid();
             if (channelId != Ulid.Empty)
@@ -165,6 +165,7 @@ namespace Karenia.TegamiHato.Server.Services
 
             await db.Messages.AddAsync(message);
             await db.SaveChangesAsync();
+            return message.MsgId;
         }
 
 #nullable disable
@@ -174,7 +175,7 @@ namespace Karenia.TegamiHato.Server.Services
             public string sender { get; set; }
             public string senderEmail { get; set; }
             public string latestMessage { get; set; }
-            public DateTime timestamp { get; set; }
+            public DateTimeOffset timestamp { get; set; }
         }
 #nullable restore
 

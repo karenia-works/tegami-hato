@@ -39,7 +39,7 @@ namespace Karenia.TegamiHato.Server.Models
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid ChannelId { get; set; }
 
-        public DateTime Timestamp { get; set; }
+        public DateTimeOffset Timestamp { get => ChannelId.Time; }
 
         public string SenderEmail { get; set; }
         public string? SenderNickname { get; set; }

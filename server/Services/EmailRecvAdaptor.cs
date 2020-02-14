@@ -62,7 +62,8 @@ namespace Karenia.TegamiHato.Server.Services
             var msg = new HatoMessage()
             {
                 MsgId = Ulid.Empty,
-                Timestamp = email.Date,
+                // WARN: All timestamps represent the time when this email ARRIVES at the server
+                // Timestamp = email.Date,
                 SenderEmail = senderEmail,
                 SenderNickname = senderNickname,
                 Title = email.Subject,

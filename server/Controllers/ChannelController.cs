@@ -4,6 +4,8 @@ using Karenia.TegamiHato.Server.Models;
 using Karenia.TegamiHato.Server.Services;
 using System.Threading.Tasks;
 using NUlid;
+using System;
+using System.Text.Json.Serialization;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -104,6 +106,13 @@ namespace Karenia.TegamiHato.Server.Controllers
             }
         }
 
+        public class SendMessageResult
+        {
+            [JsonConverter(typeof(UlidJsonConverter))]
+            public Ulid MsgId { get; set; }
+            public DateTimeOffset timestamp { get; set; }
+        }
+
         [HttpPost]
         [Route("{id}/message")]
         public async Task<IActionResult> SendMessage(
@@ -112,8 +121,12 @@ namespace Karenia.TegamiHato.Server.Controllers
         )
         {
             if (!Ulid.TryParse(id, out var _id)) return BadRequest();
-            await this._db.SaveMessageIntoChannel(message, _id);
-            return Ok();
+            var msgId = await this._db.SaveMessageIntoChannel(message, _id);
+            return Ok(new SendMessageResult()
+            {
+                MsgId = msgId,
+                timestamp = msgId.Time
+            });
         }
 
 
