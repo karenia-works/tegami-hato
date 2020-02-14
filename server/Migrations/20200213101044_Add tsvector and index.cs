@@ -29,7 +29,7 @@ namespace Karenia.TegamiHato.Server.Migrations
             migrationBuilder.Sql(@"
             CREATE TRIGGER message_search_vector_update BEFORE INSERT OR UPDATE   
             ON messages FOR EACH ROW EXECUTE PROCEDURE
-            tsvector_update_trigger(tsvector, 'jiebacfg', title, body_plain);");
+            tsvector_update_trigger(tsvector, 'public.jiebacfg', title, body_plain);");
 
             migrationBuilder.Sql("UPDATE messages SET title = title;");
         }

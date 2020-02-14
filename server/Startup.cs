@@ -34,11 +34,13 @@ namespace Karenia.TegamiHato.Server
             // * Database
             services.AddDbContext<Models.EmailSystemContext>(
                 options => options.UseNpgsql(
-                   "Host=localhost;Database=hato_db;Username=postgres;Password=postgres"
+                   "Host=localhost;Database=hato_db;Port=54321;Username=postgres;Password=postgres"
                 )
             );
-
-            services.BuildServiceProvider().GetService<Models.EmailSystemContext>().Database.Migrate();
+            {
+                var db = services.BuildServiceProvider().GetService<Models.EmailSystemContext>();
+                db.Database.Migrate();
+            }
 
             services.AddScoped<DatabaseService>();
 

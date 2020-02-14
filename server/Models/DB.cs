@@ -59,7 +59,7 @@ namespace Karenia.TegamiHato.Server.Models
         public virtual ICollection<HatoAttachment> attachments { get; set; }
 
         [JsonIgnore]
-        public NpgsqlTsVector tsvector { get; set; }
+        public NpgsqlTsVector? tsvector { get; set; }
 
         public async Task<EmailData> ToEmailData(EmailRecvService recvService)
         {
