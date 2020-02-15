@@ -2,6 +2,8 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using NUlid;
 using System;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Threading.Tasks;
 
 namespace Karenia.TegamiHato.Server.Models
 {
@@ -31,4 +33,9 @@ namespace Karenia.TegamiHato.Server.Models
             writer.WriteStringValue(value.ToString());
         }
     }
+
+    // public class UlidTypeConverter : typecon
+    // {
+
+    // }
 }

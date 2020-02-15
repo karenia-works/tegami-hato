@@ -26,7 +26,9 @@ namespace Karenia.TegamiHato.Server.Models
         public string Url { get; set; }
         public string ContentType { get; set; }
         public long Size { get; set; }
-        public virtual HatoMessage _HatoMessage { get; set; }
+
+        [JsonIgnore]
+        public virtual HatoMessage? _HatoMessage { get; set; } = null;
     }
 
     public class HatoMessageAbbr
@@ -34,7 +36,7 @@ namespace Karenia.TegamiHato.Server.Models
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid MsgId { get; set; }
 
-        public HatoChannel? _Channel { get; set; }
+        public HatoChannel? _Channel { get; set; } = null;
 
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid ChannelId { get; set; }
@@ -133,6 +135,18 @@ namespace Karenia.TegamiHato.Server.Models
         public string Email { get; set; }
 
         public virtual ICollection<ChannelUserRelation> _Channels { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<UserLoginCode>? _LoginCodes { get; set; } = null;
+    }
+
+    public class UserLoginCode
+    {
+        public Ulid CodeId { get; set; }
+
+        public string Code { get; set; }
+
+        public DateTimeOffset Expires { get; set; }
     }
 
     // Disable initialization warning because we don't need that for now
@@ -144,6 +158,7 @@ namespace Karenia.TegamiHato.Server.Models
         public DbSet<User> Users { get; set; }
         public DbSet<ChannelUserRelation> ChannelUserTable { get; set; }
         public DbSet<HatoAttachment> Attachments { get; set; }
+        // public DbSet<UserLoginCode> LoginCodes { get; set; }
 
         public EmailSystemContext(DbContextOptions ctx) : base(ctx)
         {
@@ -158,9 +173,6 @@ namespace Karenia.TegamiHato.Server.Models
         {
             base.OnModelCreating(modelBuilder);
 
-
-            modelBuilder.ToSnakeCase();
-
             modelBuilder.Entity<HatoMessage>().HasKey(x => x.MsgId);
             modelBuilder.Entity<HatoMessage>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<HatoMessage>().HasOne(x => x._Channel).WithMany(x => x._Messages).HasForeignKey(x => x.ChannelId);
@@ -173,6 +185,14 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<User>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<User>().HasAlternateKey(x => x.Email);
             modelBuilder.Entity<User>().HasIndex(x => x.Email);
+            modelBuilder.Entity<User>().OwnsMany(x => x._LoginCodes, code =>
+            {
+                code.WithOwner().HasForeignKey("UserId");
+                code.Property(x => x.CodeId).HasConversion(UlidGuidConverter);
+                code.HasKey(x => x.CodeId);
+                code.HasIndex(x => x.Code);
+                code.HasIndex(x => x.Expires);
+            });
 
             modelBuilder.Entity<HatoChannel>().HasKey(x => x.ChannelId);
             modelBuilder.Entity<HatoChannel>().HasIndex(x => x.ChannelId);
@@ -192,6 +212,8 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._Channel).WithMany(u => u._Users).HasForeignKey(u => u.ChannelId);
             modelBuilder.Entity<ChannelUserRelation>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<ChannelUserRelation>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+
+            modelBuilder.ToSnakeCase();
         }
     }
 

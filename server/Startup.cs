@@ -13,6 +13,14 @@ using Microsoft.Extensions.Logging;
 using Karenia.TegamiHato.Server.Services;
 using Npgsql;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using System.Runtime.Caching;
+using IdentityServer4;
+using IdentityServer4.Configuration;
+using IdentityServer4.Services;
+using System.Net;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Karenia.TegamiHato.Server
 {
@@ -31,11 +39,17 @@ namespace Karenia.TegamiHato.Server
         {
             services.AddLogging();
 
+            services.AddDistributedMemoryCache();
+
+
             // * Database
             services.AddDbContext<Models.EmailSystemContext>(
-                options => options.UseNpgsql(
-                   "Host=localhost;Database=hato_db;Port=54321;Username=postgres;Password=postgres"
-                )
+                options =>
+                {
+                    options.UseNpgsql(
+                        "Host=localhost;Database=hato_db;Port=54321;Username=postgres;Password=postgres"
+                    );
+                }
             );
             {
                 var db = services.BuildServiceProvider().GetService<Models.EmailSystemContext>();
@@ -43,6 +57,14 @@ namespace Karenia.TegamiHato.Server
             }
 
             services.AddScoped<DatabaseService>();
+
+            services.AddSingleton<ICorsPolicyService>(
+                new DefaultCorsPolicyService(
+                    new LoggerFactory().CreateLogger<DefaultCorsPolicyService>())
+                {
+                    AllowedOrigins = new[] { "*" },
+                    AllowAll = true
+                });
 
             // * Email service
             var domain = Environment.GetEnvironmentVariable("hato_domain");
@@ -61,12 +83,40 @@ namespace Karenia.TegamiHato.Server
                 services.AddSingleton<EmailRecvAdaptor>();
             }
 
+
+            services.AddIdentityServer(opt =>
+            {
+                opt.Events.RaiseErrorEvents = true;
+                opt.Events.RaiseFailureEvents = true;
+                opt.UserInteraction.LoginUrl = null;
+                opt.UserInteraction.LogoutUrl = null;
+            })
+               .AddInMemoryClients(IdentityConstants.clients)
+               .AddInMemoryCaching()
+            //    .AddPersistedGrantStore()
+               .AddInMemoryApiResources(IdentityConstants.apiResources)
+               .AddResourceOwnerValidator<UserIdentityService>()
+               .AddDeveloperSigningCredential()
+               .AddJwtBearerClientAuthentication();
+
+            services.AddAuthorization();
+            services.AddAuthentication();
+            services.AddLocalApiAuthentication();
+
             services.AddControllers();
         }
 
+        public class InspectMiddleware { }
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger, ILogger<InspectMiddleware> logger2)
         {
+            app.Use(async (ctx, next) =>
+            {
+                await next.Invoke();
+                logger2.LogInformation($"{ctx.Response.StatusCode}:{ctx.Request.Path}{ctx.Request.QueryString}");
+            });
+
             foreach ((var level, var log) in pendingLogs)
             {
                 logger.Log(level, log);
@@ -77,14 +127,16 @@ namespace Karenia.TegamiHato.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseIdentityServer();
 
             // Warm up
             app.ApplicationServices.GetService<MailingChannelService>();
 
             app.UseAuthorization();
+            app.UseAuthentication();
 
             app.UseEndpoints(endpoints =>
             {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUlid;
 using System;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -44,9 +45,20 @@ namespace Karenia.TegamiHato.Server.Controllers
                         req.channelName, req.isPublic, req.channelTitle));
             }
         }
+    }
+
+    [ApiController]
+    [Route("api/channel/{id}")]
+    public class ChannelIdController : ControllerBase
+    {
+        public ChannelIdController(DatabaseService _db)
+        {
+            this._db = _db;
+        }
+
+        private DatabaseService _db;
 
         [HttpGet]
-        [Route("{id}")]
         public async Task<IActionResult> GetChannel([FromRoute] string id)
         {
             // throws exception on error
@@ -69,29 +81,27 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpPost]
-        [Route("{id}/join")]
+        [Authorize]
+        [Route("join")]
         public async Task<IActionResult> JoinChannel(
-            [FromRoute] string id,
-            [FromQuery] string userId
+            [FromRoute] string id
+        // [FromQuery] string userId
         )
         {
+            var userId = HttpContext.User.Identity.Name;
             if (Ulid.TryParse(id, out var _channelId))
             {
                 if (Ulid.TryParse(userId, out var _userId))
                 {
                     var result = await this._db.AddUserToChannel(_userId, _channelId);
-                    switch (result)
+                    return result switch
                     {
-                        case AddResult.Success:
-                            return NoContent();
-                        case AddResult.AlreadyExist:
-                            return BadRequest(new ErrorResult(
-                                "resource already exists",
-                                "The user has already been in the channel"
-                            ));
-                        default:
-                            return BadRequest();
-                    }
+                        AddResult.Success => NoContent(),
+                        AddResult.AlreadyExist => BadRequest(new ErrorResult(
+                            "resource already exists",
+                            "The user has already been in the channel")),
+                        _ => BadRequest(),
+                    };
                 }
                 else
                 {
@@ -114,7 +124,7 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpPost]
-        [Route("{id}/message")]
+        [Route("message")]
         public async Task<IActionResult> SendMessage(
             [FromRoute] string id,
             [FromBody] HatoMessage message
@@ -131,7 +141,7 @@ namespace Karenia.TegamiHato.Server.Controllers
 
 
         [HttpGet]
-        [Route("{id}/message")]
+        [Route("message")]
         public IActionResult GetRecentMessage(
             [FromRoute] string id,
              string startId = "7fffffffffffffffffffffffff",

@@ -124,22 +124,29 @@ namespace Karenia.TegamiHato.Server.Services
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
+
+            var partial = db.Messages.AsQueryable();
+
             if (ascending)
-                return db.Messages
-                    .Where(
+                partial = partial.Where(
                         message =>
                             (message.ChannelId == channelId)
-                            && (message.MsgId.CompareTo(start) > 0))
-                    .Take(count)
+                            && (message.MsgId.CompareTo(start) > 0));
+            else
+                partial = partial.Where(
+                        message =>
+                            (message.ChannelId == channelId)
+                            && (message.MsgId.CompareTo(start) < 0));
+
+            partial = partial.Take(count)
+                .Include(msg => msg.attachments);
+
+            if (ascending)
+                return partial
                     .OrderBy(message => message.MsgId)
                     .AsAsyncEnumerable();
             else
-                return db.Messages
-                    .Where(
-                        message => (message.ChannelId == channelId)
-                        && (message.MsgId.CompareTo(start) < 0)
-                    )
-                    .Take(count)
+                return partial
                     .OrderByDescending(message => message.MsgId)
                     .AsAsyncEnumerable();
         }
@@ -325,6 +332,23 @@ namespace Karenia.TegamiHato.Server.Services
             if (user == null) return false;
 
             return await CanUserSendInChannel(user.UserId, channelId);
+        }
+
+        public async Task<bool> CanUserLoginWithCode(string userEmail, string code)
+        {
+            var now = DateTimeOffset.Now;
+
+            var result = await db.Users.Where(user => user.Email == userEmail)
+                       .SelectMany(user => user._LoginCodes.Where(
+                               loginCode => loginCode.Code == code && loginCode.Expires > now))
+                       .DeleteAsync();
+
+            // prune codes
+            await db.Users
+                .SelectMany(u => u._LoginCodes.Where(code => code.Expires <= now))
+                .DeleteAsync();
+
+            return result > 0;
         }
     }
 }
