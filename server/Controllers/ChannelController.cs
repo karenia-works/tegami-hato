@@ -7,6 +7,8 @@ using NUlid;
 using System;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
+using IdentityServer4;
+using System.Linq;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -48,7 +50,7 @@ namespace Karenia.TegamiHato.Server.Controllers
     }
 
     [ApiController]
-    [Route("api/channel/{id}")]
+    [Route("api/channel/{id:Regex(^\\w{{26}}$)}")]
     public class ChannelIdController : ControllerBase
     {
         public ChannelIdController(DatabaseService _db)
@@ -81,14 +83,16 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize("api")]
         [Route("join")]
         public async Task<IActionResult> JoinChannel(
             [FromRoute] string id
         // [FromQuery] string userId
         )
         {
-            var userId = HttpContext.User.Identity.Name;
+            var userId = HttpContext.User.Claims.Where(claim => claim.Type == "sub")
+                .Select(claim => claim.Value)
+                .Single();
             if (Ulid.TryParse(id, out var _channelId))
             {
                 if (Ulid.TryParse(userId, out var _userId))

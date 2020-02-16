@@ -99,8 +99,21 @@ namespace Karenia.TegamiHato.Server
                .AddDeveloperSigningCredential()
                .AddJwtBearerClientAuthentication();
 
-            services.AddAuthorization();
-            services.AddAuthentication();
+            services.AddAuthorization(option =>
+            {
+                option.AddPolicy(
+                "api", policy =>
+                {
+                    policy.AddAuthenticationSchemes("api");
+
+                    policy.RequireAuthenticatedUser();
+                }
+                );
+            });
+            services.AddAuthentication().AddLocalApi("api", options =>
+            {
+                options.ExpectedScope = "api";
+            });
             services.AddLocalApiAuthentication();
 
             services.AddControllers();

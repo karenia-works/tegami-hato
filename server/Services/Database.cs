@@ -63,6 +63,13 @@ namespace Karenia.TegamiHato.Server.Services
             return channel;
         }
 
+        public async Task<Ulid?> GetUserIdFromEmail(string email)
+        {
+            return await db.Users.Where(u => u.Email == email)
+                .Select(u => u.UserId)
+                .SingleOrDefaultAsync();
+        }
+
         public async Task<User?> GetUserFromEmail(string email)
         {
             return await db.Users.SingleOrDefaultAsync(u => u.Email == email);
@@ -334,6 +341,15 @@ namespace Karenia.TegamiHato.Server.Services
             return await CanUserSendInChannel(user.UserId, channelId);
         }
 
+        public async ValueTask<bool> GenerateLoginCode(string userEmail, UserLoginCode code)
+        {
+            var user = await db.Users.SingleOrDefaultAsync(user => user.Email == userEmail);
+            if (user is null) return false;
+            user._LoginCodes.Add(code);
+            await db.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> CanUserLoginWithCode(string userEmail, string code)
         {
             var now = DateTimeOffset.Now;
@@ -343,10 +359,10 @@ namespace Karenia.TegamiHato.Server.Services
                                loginCode => loginCode.Code == code && loginCode.Expires > now))
                        .DeleteAsync();
 
-            // prune codes
-            await db.Users
-                .SelectMany(u => u._LoginCodes.Where(code => code.Expires <= now))
-                .DeleteAsync();
+            // // prune codes
+            // await db.Users
+            //     .SelectMany(u => u._LoginCodes.Where(code => code.Expires <= now))
+            //     .DeleteAsync();
 
             return result > 0;
         }

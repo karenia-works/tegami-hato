@@ -12,6 +12,7 @@ using FluentEmail.Core.Models;
 using System.Linq;
 using Karenia.TegamiHato.Server.Services;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace Karenia.TegamiHato.Server.Models
 {
@@ -137,7 +138,7 @@ namespace Karenia.TegamiHato.Server.Models
         public virtual ICollection<ChannelUserRelation> _Channels { get; set; }
 
         [JsonIgnore]
-        public virtual ICollection<UserLoginCode>? _LoginCodes { get; set; } = null;
+        public virtual ICollection<UserLoginCode> _LoginCodes { get; set; } = null;
     }
 
     public class UserLoginCode
@@ -147,6 +148,33 @@ namespace Karenia.TegamiHato.Server.Models
         public string Code { get; set; }
 
         public DateTimeOffset Expires { get; set; }
+
+        // =============
+
+
+        /// <summary>
+        /// How long is the code?
+        /// </summary>
+        public const int CodeLength = 6;
+        public static readonly char[] usableLetters = "0123456789ABCDEFGHJKMNPQRSTVWXYZ".ToCharArray();
+        public static readonly TimeSpan ExpirationTime = new TimeSpan(0, 15, 0);
+
+        public static UserLoginCode Generate(DateTimeOffset timestamp)
+        {
+            var rng = new System.Random();
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < CodeLength; i++)
+            {
+                sb.Append(usableLetters[rng.Next(usableLetters.Length)]);
+            }
+            return new UserLoginCode()
+            {
+                CodeId = Ulid.NewUlid(),
+                Code = sb.ToString(),
+                Expires = timestamp + ExpirationTime
+            };
+        }
     }
 
     // Disable initialization warning because we don't need that for now

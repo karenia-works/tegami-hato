@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
+using NUlid;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -47,11 +48,15 @@ namespace Karenia.TegamiHato.Server.Services
 
             if (await db.CanUserLoginWithCode(context.UserName, context.Password))
             {
+                // We have guarantee it will have value
+                Ulid id = (await db.GetUserIdFromEmail(context.UserName)).Value;
+
                 context.Result = new GrantValidationResult(
-                    subject: context.UserName,
+                    subject: id.ToString(),
                     authenticationMethod: "custom",
                     claims: new Claim[]
                     {
+
                     }
                 );
             }
