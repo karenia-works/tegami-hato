@@ -182,43 +182,18 @@ namespace Karenia.TegamiHato.Server.Services
             return message.MsgId;
         }
 
-#nullable disable
-        public class RecentChannelEntry
-        {
-            public HatoChannel channel { get; set; }
-            public string sender { get; set; }
-            public string senderEmail { get; set; }
-            public string latestMessage { get; set; }
-            public DateTimeOffset timestamp { get; set; }
-        }
-#nullable restore
 
-        public IAsyncEnumerable<RecentChannelEntry> GetRecentChannels(Ulid userId, int count = 20, int skip = 0)
+        public IAsyncEnumerable<RecentMessageViewItem> GetRecentChannels(Ulid userId, int count = 20, int skip = 0)
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
 
             return db
-                .ChannelUserTable
-                .Where(entry => entry.UserId == userId)
-                .Select(entry => new
-                {
-                    channel = entry._Channel,
-                    id = entry._Channel._Messages.Max(message => message.MsgId)
-                })
-                .Join(
-                    db.Messages,
-                    ch => ch.id,
-                    msg => msg.MsgId,
-                    (ch, msg) => new RecentChannelEntry()
-                    {
-                        channel = ch.channel,
-                        sender = msg.SenderNickname,
-                        senderEmail = msg.SenderEmail,
-                        latestMessage = msg.BodyPlain,
-                        timestamp = msg.Timestamp
-                    })
-                .OrderByDescending(ch => ch.timestamp)
+                .RecentMessages.Join(
+                    db.ChannelUserTable.Where(x => x.UserId == userId),
+                    msg => msg.ChannelId,
+                    ch => ch.ChannelId,
+                    (r, i) => r)
                 .Skip(skip)
                 .Take(count)
                 .AsAsyncEnumerable();

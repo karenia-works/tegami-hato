@@ -47,6 +47,33 @@ namespace Karenia.TegamiHato.Server.Controllers
                         req.channelName, req.isPublic, req.channelTitle));
             }
         }
+
+        [HttpGet]
+        [Route("recent")]
+        [Authorize("api")]
+        public IActionResult GetRecentChannelEntries(
+            [FromQuery] int count = 20,
+            [FromQuery] int skip = 0
+        )
+        {
+            Ulid _id;
+            {
+                var id = HttpContext.User.Claims.Where(claim => claim.Type == "sub")
+                    .Select(claim => claim.Value)
+                    .Single();
+
+                if (Ulid.TryParse(id, out var res)) _id = res; else return BadRequest();
+            }
+
+            try
+            {
+                return Ok(this._db.GetRecentChannels(_id, count, skip));
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                return BadRequest(e);
+            }
+        }
     }
 
     [ApiController]

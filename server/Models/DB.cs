@@ -97,6 +97,19 @@ namespace Karenia.TegamiHato.Server.Models
         }
     }
 
+    public class RecentMessageViewItem
+    {
+        [JsonConverter(typeof(UlidJsonConverter))]
+        public Ulid ChannelId { get; set; }
+
+        public string ChannelTitle { get; set; }
+
+        [JsonConverter(typeof(UlidJsonConverter))]
+        public Ulid MsgId { get; set; }
+
+        public string BodyPlain { get; set; }
+    }
+
     public class HatoChannel
     {
         [JsonConverter(typeof(UlidJsonConverter))]
@@ -188,6 +201,8 @@ namespace Karenia.TegamiHato.Server.Models
         public DbSet<HatoAttachment> Attachments { get; set; }
         // public DbSet<UserLoginCode> LoginCodes { get; set; }
 
+        public DbSet<RecentMessageViewItem> RecentMessages { get; set; }
+
         public EmailSystemContext(DbContextOptions ctx) : base(ctx)
         {
         }
@@ -240,6 +255,12 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._Channel).WithMany(u => u._Users).HasForeignKey(u => u.ChannelId);
             modelBuilder.Entity<ChannelUserRelation>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<ChannelUserRelation>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+
+            modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<RecentMessageViewItem>().HasNoKey().ToView("recent_messages");
+            modelBuilder.Entity<RecentMessageViewItem>().HasIndex(x => x.ChannelId);
+            modelBuilder.Entity<RecentMessageViewItem>().HasIndex(x => x.MsgId);
 
             modelBuilder.ToSnakeCase();
         }
