@@ -63,6 +63,13 @@ namespace Karenia.TegamiHato.Server.Services
             return channel;
         }
 
+        public async Task<Ulid?> GetUserIdFromEmail(string email)
+        {
+            return await db.Users.Where(u => u.Email == email)
+                .Select(u => u.UserId)
+                .SingleOrDefaultAsync();
+        }
+
         public async Task<User?> GetUserFromEmail(string email)
         {
             return await db.Users.SingleOrDefaultAsync(u => u.Email == email);
@@ -73,6 +80,17 @@ namespace Karenia.TegamiHato.Server.Services
             return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
         }
 
+        public async Task<HatoChannel?> GetChannelFromUsernameOrId(string name)
+        {
+            if (Ulid.TryParse(name, out var id))
+                return await db
+                    .Channels
+                    .SingleOrDefaultAsync(
+                        ch => ch.ChannelId == id
+                            || ch.ChannelUsername == name);
+            else
+                return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
+        }
 
         public async Task<bool> ChannelNameExists(string name)
         {
@@ -113,22 +131,29 @@ namespace Karenia.TegamiHato.Server.Services
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
+
+            var partial = db.Messages.AsQueryable();
+
             if (ascending)
-                return db.Messages
-                    .Where(
+                partial = partial.Where(
                         message =>
                             (message.ChannelId == channelId)
-                            && (message.MsgId.CompareTo(start) > 0))
-                    .Take(count)
+                            && (message.MsgId.CompareTo(start) > 0));
+            else
+                partial = partial.Where(
+                        message =>
+                            (message.ChannelId == channelId)
+                            && (message.MsgId.CompareTo(start) < 0));
+
+            partial = partial.Take(count)
+                .Include(msg => msg.attachments);
+
+            if (ascending)
+                return partial
                     .OrderBy(message => message.MsgId)
                     .AsAsyncEnumerable();
             else
-                return db.Messages
-                    .Where(
-                        message => (message.ChannelId == channelId)
-                        && (message.MsgId.CompareTo(start) < 0)
-                    )
-                    .Take(count)
+                return partial
                     .OrderByDescending(message => message.MsgId)
                     .AsAsyncEnumerable();
         }
@@ -144,7 +169,7 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="message"></param>
         /// <param name="channelId"></param>
         /// <returns></returns>
-        public async Task SaveMessageIntoChannel(HatoMessage message, Ulid channelId)
+        public async Task<Ulid> SaveMessageIntoChannel(HatoMessage message, Ulid channelId)
         {
             message.MsgId = Ulid.NewUlid();
             if (channelId != Ulid.Empty)
@@ -154,45 +179,21 @@ namespace Karenia.TegamiHato.Server.Services
 
             await db.Messages.AddAsync(message);
             await db.SaveChangesAsync();
+            return message.MsgId;
         }
 
-#nullable disable
-        public class RecentChannelEntry
-        {
-            public HatoChannel channel { get; set; }
-            public string sender { get; set; }
-            public string senderEmail { get; set; }
-            public string latestMessage { get; set; }
-            public DateTime timestamp { get; set; }
-        }
-#nullable restore
 
-        public IAsyncEnumerable<RecentChannelEntry> GetRecentChannels(Ulid userId, int count = 20, int skip = 0)
+        public IAsyncEnumerable<RecentMessageViewItem> GetRecentChannels(Ulid userId, int count = 20, int skip = 0)
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
 
             return db
-                .ChannelUserTable
-                .Where(entry => entry.UserId == userId)
-                .Select(entry => new
-                {
-                    channel = entry._Channel,
-                    id = entry._Channel._Messages.Max(message => message.MsgId)
-                })
-                .Join(
-                    db.Messages,
-                    ch => ch.id,
-                    msg => msg.MsgId,
-                    (ch, msg) => new RecentChannelEntry()
-                    {
-                        channel = ch.channel,
-                        sender = msg.SenderNickname,
-                        senderEmail = msg.SenderEmail,
-                        latestMessage = msg.BodyPlain,
-                        timestamp = msg.Timestamp
-                    })
-                .OrderByDescending(ch => ch.timestamp)
+                .RecentMessages.Join(
+                    db.ChannelUserTable.Where(x => x.UserId == userId),
+                    msg => msg.ChannelId,
+                    ch => ch.ChannelId,
+                    (r, i) => r)
                 .Skip(skip)
                 .Take(count)
                 .AsAsyncEnumerable();
@@ -313,6 +314,32 @@ namespace Karenia.TegamiHato.Server.Services
             if (user == null) return false;
 
             return await CanUserSendInChannel(user.UserId, channelId);
+        }
+
+        public async ValueTask<bool> GenerateLoginCode(string userEmail, UserLoginCode code)
+        {
+            var user = await db.Users.SingleOrDefaultAsync(user => user.Email == userEmail);
+            if (user is null) return false;
+            user._LoginCodes.Add(code);
+            await db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> CanUserLoginWithCode(string userEmail, string code)
+        {
+            var now = DateTimeOffset.Now;
+
+            var result = await db.Users.Where(user => user.Email == userEmail)
+                       .SelectMany(user => user._LoginCodes.Where(
+                               loginCode => loginCode.Code == code && loginCode.Expires > now))
+                       .DeleteAsync();
+
+            // // prune codes
+            // await db.Users
+            //     .SelectMany(u => u._LoginCodes.Where(code => code.Expires <= now))
+            //     .DeleteAsync();
+
+            return result > 0;
         }
     }
 }

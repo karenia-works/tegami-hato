@@ -1,0 +1,9 @@
+threads: 8
+base: http://localhost:5000
+iterations: 100000
+rampup: 1
+
+plan:
+  - name: curl
+    request:
+      url: "/api/channel/01E10THE76RYGBJMZA0CKCVTPQ/message?startId=5ZZZZZZZZZZZZZZZZZZZZZZZZZ&ascending=false"

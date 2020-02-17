@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -22,16 +23,17 @@ namespace Karenia.TegamiHato.Server.Services
         public EmailSendingService(string domain, string apiKey, ILogger<EmailSendingService> logger)
         {
             this.sender = new MailgunSender(domain, apiKey);
-            this.domain = domain;
+            this.Domain = domain;
             this.logger = logger;
             // this.factory = new FluentEmailFactory(sender);
             logger.LogInformation("Started sending service for {0}", domain);
         }
 
-        private MailgunSender sender;
-        private string domain;
-        private ILogger<EmailSendingService> logger;
-        public string Domain { get => domain; }
+        private readonly MailgunSender sender;
+
+        private readonly ILogger<EmailSendingService> logger;
+
+        public string Domain { get; }
 
         public async Task<SendResponse> SendEmail(EmailData data)
         {
@@ -43,6 +45,20 @@ namespace Karenia.TegamiHato.Server.Services
         public async Task<SendResponse> SendEmail(IFluentEmail email)
         {
             return await sender.SendAsync(email);
+        }
+
+        public async Task<SendResponse> SendEmail(
+            EmailData email,
+            ICollection<string> group,
+            string senderName)
+        {
+            var toAddress = group.Select(
+                target => new FluentEmail.Core.Models.Address(target))
+                .ToList();
+            var senderAddress = senderName + "@" + Domain;
+            email.FromAddress = new FluentEmail.Core.Models.Address(senderAddress);
+            email.ToAddresses = toAddress;
+            return await this.SendEmail(email);
         }
     }
 
@@ -75,13 +91,15 @@ namespace Karenia.TegamiHato.Server.Services
 
         public event Action<EmailRecvEvent>? OnEmailRecv;
 
-        private string domain;
+        private readonly string domain;
 
-        private string authParam;
+        private readonly string authParam;
 
-        private TimeSpan firstRetrievalOffset = new TimeSpan(hours: 0, minutes: -15, seconds: 0);
+        private readonly TimeSpan firstRetrievalOffset = new TimeSpan(hours: 0, minutes: -15, seconds: 0);
 
-        public async void beginEmailLoop()
+        public string Domain => domain;
+
+        public async void BeginEmailLoop()
         {
             var lastRetrieval = DateTime.Now + firstRetrievalOffset;
             while (true)
@@ -100,8 +118,8 @@ namespace Karenia.TegamiHato.Server.Services
             var begin = lastRetrieval.ToUniversalTime() - DateTime.UnixEpoch;
             var now = DateTime.Now.ToUniversalTime();
             var end = now - DateTime.UnixEpoch;
-            logger.LogInformation("Pulling email from {0}, ranging from {1} to {2}", domain, DateTime.UnixEpoch + begin, now);
-            var result = await client.GetAsync($"https://api.mailgun.net/v3/{domain}/events?event=stored&begin={begin.TotalSeconds}&end={end.TotalSeconds}");
+            logger.LogInformation("Pulling email from {0}, ranging from {1} to {2}", Domain, DateTime.UnixEpoch + begin, now);
+            var result = await client.GetAsync($"https://api.mailgun.net/v3/{Domain}/events?event=stored&begin={begin.TotalSeconds}&end={end.TotalSeconds}");
             if (!result.IsSuccessStatusCode)
             {
                 // TODO

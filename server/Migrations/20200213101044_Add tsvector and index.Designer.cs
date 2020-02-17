@@ -3,6 +3,7 @@ using System;
 using Karenia.TegamiHato.Server.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -10,9 +11,10 @@ using NpgsqlTypes;
 namespace Karenia.TegamiHato.Server.Migrations
 {
     [DbContext(typeof(EmailSystemContext))]
-    partial class EmailSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20200213101044_Add tsvector and index")]
+    partial class Addtsvectorandindex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,11 +25,9 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.ChannelUserRelation", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnName("user_id")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ChannelId")
-                        .HasColumnName("channel_id")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("CanEditRoles")
@@ -42,17 +42,13 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnName("can_send_message")
                         .HasColumnType("boolean");
 
-                    b.HasKey("UserId", "ChannelId")
-                        .HasName("pk_channel_user_table");
+                    b.HasKey("UserId", "ChannelId");
 
-                    b.HasIndex("ChannelId")
-                        .HasName("ix_channel_user_table_channel_id");
+                    b.HasIndex("ChannelId");
 
-                    b.HasIndex("UserId")
-                        .HasName("ix_channel_user_table_user_id");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "ChannelId")
-                        .HasName("ix_channel_user_table_user_id_channel_id");
+                    b.HasIndex("UserId", "ChannelId");
 
                     b.ToTable("channel_user_table");
                 });
@@ -60,7 +56,6 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoAttachment", b =>
                 {
                     b.Property<Guid>("AttachmentId")
-                        .HasColumnName("attachment_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ContentType")
@@ -82,18 +77,14 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnName("url")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("_HatoMessageMsgId")
-                        .HasColumnName("hato_message_msg_id")
+                    b.Property<Guid>("_HatoMessageMsgId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("AttachmentId")
-                        .HasName("pk_attachments");
+                    b.HasKey("AttachmentId");
 
-                    b.HasIndex("AttachmentId")
-                        .HasName("ix_attachments_attachment_id");
+                    b.HasIndex("AttachmentId");
 
-                    b.HasIndex("_HatoMessageMsgId")
-                        .HasName("ix_attachments_hato_message_msg_id");
+                    b.HasIndex("_HatoMessageMsgId");
 
                     b.ToTable("attachments");
                 });
@@ -101,7 +92,6 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoChannel", b =>
                 {
                     b.Property<Guid>("ChannelId")
-                        .HasColumnName("channel_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ChannelTitle")
@@ -117,14 +107,11 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnName("is_public")
                         .HasColumnType("boolean");
 
-                    b.HasKey("ChannelId")
-                        .HasName("pk_channels");
+                    b.HasKey("ChannelId");
 
-                    b.HasIndex("ChannelId")
-                        .HasName("ix_channels_channel_id");
+                    b.HasIndex("ChannelId");
 
-                    b.HasIndex("ChannelUsername")
-                        .HasName("ix_channels_channel_username");
+                    b.HasIndex("ChannelUsername");
 
                     b.ToTable("channels");
                 });
@@ -132,7 +119,6 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoMessage", b =>
                 {
                     b.Property<Guid>("MsgId")
-                        .HasColumnName("msg_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("BodyHtml")
@@ -145,7 +131,6 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnType("text");
 
                     b.Property<Guid>("ChannelId")
-                        .HasColumnName("channel_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("SenderEmail")
@@ -157,26 +142,27 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnName("sender_nickname")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnName("timestamp")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnName("title")
                         .HasColumnType("text");
 
                     b.Property<NpgsqlTsVector>("tsvector")
+                        .IsRequired()
                         .HasColumnName("tsvector")
                         .HasColumnType("tsvector");
 
-                    b.HasKey("MsgId")
-                        .HasName("pk_messages");
+                    b.HasKey("MsgId");
 
-                    b.HasIndex("ChannelId")
-                        .HasName("ix_messages_channel_id");
+                    b.HasIndex("ChannelId");
 
-                    b.HasIndex("MsgId")
-                        .HasName("ix_messages_msg_id");
+                    b.HasIndex("MsgId");
 
                     b.HasIndex("tsvector")
-                        .HasName("ix_messages_tsvector")
                         .HasAnnotation("Npgsql:IndexMethod", "GIN");
 
                     b.ToTable("messages");
@@ -185,7 +171,6 @@ namespace Karenia.TegamiHato.Server.Migrations
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.User", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnName("user_id")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")
@@ -198,17 +183,13 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasColumnName("nickname")
                         .HasColumnType("text");
 
-                    b.HasKey("UserId")
-                        .HasName("pk_users");
+                    b.HasKey("UserId");
 
-                    b.HasAlternateKey("Email")
-                        .HasName("ak_users_email");
+                    b.HasAlternateKey("Email");
 
-                    b.HasIndex("Email")
-                        .HasName("ix_users_email");
+                    b.HasIndex("Email");
 
-                    b.HasIndex("UserId")
-                        .HasName("ix_users_user_id");
+                    b.HasIndex("UserId");
 
                     b.ToTable("users");
                 });
@@ -218,14 +199,14 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", "_Channel")
                         .WithMany("_Users")
                         .HasForeignKey("ChannelId")
-                        .HasConstraintName("fk_channel_user_table_channels_channel_id")
+                        .HasConstraintName("fk_channel_user_table_channels_channel_temp_id1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Karenia.TegamiHato.Server.Models.User", "_User")
                         .WithMany("_Channels")
                         .HasForeignKey("UserId")
-                        .HasConstraintName("fk_channel_user_table_users_user_id")
+                        .HasConstraintName("fk_channel_user_table_users_user_temp_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -235,7 +216,9 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.HasOne("Karenia.TegamiHato.Server.Models.HatoMessage", "_HatoMessage")
                         .WithMany("attachments")
                         .HasForeignKey("_HatoMessageMsgId")
-                        .HasConstraintName("fk_attachments_messages_hato_message_msg_id");
+                        .HasConstraintName("fk_attachments_messages_hato_message_temp_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoMessage", b =>
@@ -243,50 +226,9 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", "_Channel")
                         .WithMany("_Messages")
                         .HasForeignKey("ChannelId")
-                        .HasConstraintName("fk_messages_channels_channel_id")
+                        .HasConstraintName("fk_messages_channels_channel_temp_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.User", b =>
-                {
-                    b.OwnsMany("Karenia.TegamiHato.Server.Models.UserLoginCode", "_LoginCodes", b1 =>
-                        {
-                            b1.Property<Guid>("CodeId")
-                                .HasColumnName("code_id")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Code")
-                                .IsRequired()
-                                .HasColumnName("code")
-                                .HasColumnType("text");
-
-                            b1.Property<DateTimeOffset>("Expires")
-                                .HasColumnName("expires")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<Guid>("UserId")
-                                .HasColumnName("user_id")
-                                .HasColumnType("uuid");
-
-                            b1.HasKey("CodeId")
-                                .HasName("pk_user_login_code");
-
-                            b1.HasIndex("Code")
-                                .HasName("ix_user_login_code_code");
-
-                            b1.HasIndex("Expires")
-                                .HasName("ix_user_login_code_expires");
-
-                            b1.HasIndex("UserId")
-                                .HasName("ix_user_login_code_user_id");
-
-                            b1.ToTable("user_login_code");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserId")
-                                .HasConstraintName("fk_user_login_code_users_user_id");
-                        });
                 });
 #pragma warning restore 612, 618
         }
