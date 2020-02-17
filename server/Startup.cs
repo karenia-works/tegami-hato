@@ -65,24 +65,46 @@ namespace Karenia.TegamiHato.Server
                     AllowedOrigins = new[] { "*" },
                     AllowAll = true
                 });
-
-            // * Email service
-            var domain = Environment.GetEnvironmentVariable("hato_domain");
-            var apiKey = Environment.GetEnvironmentVariable("hato_api_key");
-            if (domain == null)
-                pendingLogs.Add((LogLevel.Warning, "Email domain not defined. Please define API key as environment variable 'hato_domain'. Email server will not start."));
-            else if (apiKey == null)
-                pendingLogs.Add((LogLevel.Warning, "API Key not defined. Please define API key as environment variable 'hato_api_key'. Email server will not start."));
-            else
             {
-                pendingLogs.Add((LogLevel.Information, "Starting email sending and receiving services."));
-                services.AddSingleton<EmailRecvService>((srv) => new EmailRecvService(domain, apiKey, srv.GetService<ILogger<EmailRecvService>>()));
+                // * Email service
+                var domain = Environment.GetEnvironmentVariable("hato_domain");
+                var apiKey = Environment.GetEnvironmentVariable("hato_api_key");
 
-                services.AddSingleton<EmailSendingService>((srv) => new EmailSendingService(domain, apiKey, srv.GetService<ILogger<EmailSendingService>>()));
+                if (domain == null)
+                    pendingLogs.Add((LogLevel.Error, "Email domain not defined. Please define API key as environment variable 'hato_domain'. Email server will not start."));
 
-                services.AddSingleton<EmailRecvAdaptor>();
+                if (apiKey == null)
+                    pendingLogs.Add((LogLevel.Error, "API Key not defined. Please define API key as environment variable 'hato_api_key'. Email server will not start."));
+
+                if (domain != null && apiKey != null)
+                {
+                    services.AddSingleton<EmailRecvService>((srv) => new EmailRecvService(domain, apiKey, srv.GetService<ILogger<EmailRecvService>>()));
+
+                    services.AddSingleton<EmailSendingService>((srv) => new EmailSendingService(domain, apiKey, srv.GetService<ILogger<EmailSendingService>>()));
+
+                    services.AddSingleton<EmailRecvAdaptor>();
+                }
             }
 
+            {
+                // config OSS
+                var domain = Environment.GetEnvironmentVariable("hato_oss_domain");
+                var key = Environment.GetEnvironmentVariable("hato_oss_key");
+                var secret = Environment.GetEnvironmentVariable("hato_oss_secret");
+                var spaceName = Environment.GetEnvironmentVariable("hato_oss_space");
+
+                if (domain == null)
+                    pendingLogs.Add((LogLevel.Error, "OSS domain not defined. Please define API key as environment variable 'hato_oss_domain'."));
+                if (key == null)
+                    pendingLogs.Add((LogLevel.Error, "OSS key not defined. Please define API key as environment variable 'hato_oss_key'."));
+                if (secret == null)
+                    pendingLogs.Add((LogLevel.Error, "OSS secret not defined. Please define API key as environment variable 'hato_oss_secret'."));
+                if (spaceName == null)
+                    pendingLogs.Add((LogLevel.Error, "OSS space name not defined. Please define API key as environment variable 'hato_oss_space'."));
+
+                if (domain != null && key != null && spaceName != null && secret != null)
+                    services.AddSingleton<ObjectStorageService>(srv => new ObjectStorageService(domain, key, secret, spaceName));
+            }
 
             services.AddIdentityServer(opt =>
             {
@@ -122,7 +144,12 @@ namespace Karenia.TegamiHato.Server
         public class InspectMiddleware { }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger, ILogger<InspectMiddleware> logger2)
+        public void Configure(
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            ILogger<Startup> logger,
+            ILogger<InspectMiddleware> logger2,
+            IHostApplicationLifetime lifetime)
         {
             app.Use(async (ctx, next) =>
             {
@@ -133,6 +160,11 @@ namespace Karenia.TegamiHato.Server
             foreach ((var level, var log) in pendingLogs)
             {
                 logger.Log(level, log);
+            }
+            if (pendingLogs.Any(item => item.Item1 == LogLevel.Error))
+            {
+                logger.LogCritical("There's error in startup. Aborting.");
+                lifetime.StopApplication();
             }
 
             if (env.IsDevelopment())
