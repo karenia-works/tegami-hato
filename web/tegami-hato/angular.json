@@ -24,8 +24,21 @@
             "tsConfig": "tsconfig.app.json",
             "aot": false,
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              {
+                "glob": "**/*",
+                "input": "./assets/",
+                "output": "./assets/"
+              },
+              {
+                "glob": "favicon.ico",
+                "input": "./",
+                "output": "./"
+              },
+              {
+                "glob": "mdi.svg",
+                "input": "../node_modules/@mdi/angular-material",
+                "output": "./assets"
+              }
             ],
             "styles": [
               "src/styles.styl"
@@ -125,6 +138,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "tegami-hato"
+    }
+  },
+  "defaultProject": "tegami-hato",
+  "cli": {
+    "analytics": false
+  }
 }
