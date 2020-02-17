@@ -17,8 +17,7 @@ namespace Karenia.TegamiHato.Server.Services
             EmailRecvService recv,
             EmailSendingService send,
             DatabaseService db,
-            ILogger<EmailRecvAdaptor> logger
-        )
+            ILogger<EmailRecvAdaptor> logger)
         {
             this.recv = recv;
             this.send = send;
@@ -56,7 +55,8 @@ namespace Karenia.TegamiHato.Server.Services
             var senderEmail = origin["email"].Value;
             var senderNickname = origin["nick"].Value;
 
-            var allTargetChannels = await this.db.db.Channels.Where(ch => targetChannelIds.Contains(ch.ChannelId) || targetChannels.Contains(ch.ChannelUsername)).ToListAsync();
+            var allTargetChannels = await this.db.db.Channels.Where(ch => targetChannelIds.Contains(ch.ChannelId)
+            || targetChannels.Contains(ch.ChannelUsername)).ToListAsync();
             var allTargetChannelIds = allTargetChannels.Select(ch => ch.ChannelId).ToList();
 
             var msg = new HatoMessage()
@@ -78,15 +78,18 @@ namespace Karenia.TegamiHato.Server.Services
                 await SaveEmail(msg);
             }
 
-            var allTargetEmails = await this.
-                db.db.ChannelUserTable
-                .Where(u => allTargetChannelIds.Contains(u.ChannelId))
-                .Include(entry => entry._User)
-                .GroupBy(
-                    entry => entry._Channel.ChannelUsername ?? entry.ChannelId.ToString(),
-                    entry => entry._User.Email)
-                .ToListAsync();
+            List<IGrouping<string, string>> allTargetEmails = await GetEmailsFromChannelIds(allTargetChannelIds);
 
+            await SendEmailAndFailure(email, senderEmail, senderNickname, msg, allTargetEmails);
+        }
+
+        private async Task SendEmailAndFailure(
+            MailgunEmailRaw email,
+            string senderEmail,
+            string senderNickname,
+            HatoMessage msg,
+            List<IGrouping<string, string>> allTargetEmails)
+        {
             var failedSendChannels = await SendEmail(msg, allTargetEmails);
             if (failedSendChannels.Count > 0)
             {
@@ -114,6 +117,19 @@ namespace Karenia.TegamiHato.Server.Services
             }
         }
 
+        public async Task<List<IGrouping<string, string>>> GetEmailsFromChannelIds(IList<Ulid> channelIds)
+        {
+            var allTargetEmails = await this.
+               db.db.ChannelUserTable
+               .Where(u => channelIds.Contains(u.ChannelId))
+               .Include(entry => entry._User)
+               .GroupBy(
+                   entry => entry._Channel.ChannelUsername ?? entry.ChannelId.ToString(),
+                   entry => entry._User.Email)
+               .ToListAsync();
+            return allTargetEmails;
+        }
+
 
         private async Task SaveEmail(HatoMessage msg)
         {
@@ -126,7 +142,7 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="msg"></param>
         /// <param name="targetEmails"></param>
         /// <returns>Email channels that failed to send</returns>
-        private async Task<List<(string, string)>> SendEmail(HatoMessage msg, List<IGrouping<string, string>> targetEmails)
+        public async Task<List<(string, string)>> SendEmail(HatoMessage msg, List<IGrouping<string, string>> targetEmails)
         {
             var failedChannels = new List<(string, string)>();
             foreach (var group in targetEmails)

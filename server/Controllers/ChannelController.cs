@@ -80,12 +80,16 @@ namespace Karenia.TegamiHato.Server.Controllers
     [Route("api/channel/{id:Regex(^\\w{{26}}$)}")]
     public class ChannelIdController : ControllerBase
     {
-        public ChannelIdController(DatabaseService _db)
+        public ChannelIdController(
+            DatabaseService _db,
+            EmailRecvAdaptor recvAdaptor)
         {
             this._db = _db;
+            this.recvAdaptor = recvAdaptor;
         }
 
-        private DatabaseService _db;
+        private readonly DatabaseService _db;
+        private readonly EmailRecvAdaptor recvAdaptor;
 
         [HttpGet]
         public async Task<IActionResult> GetChannel([FromRoute] string id)
@@ -152,6 +156,7 @@ namespace Karenia.TegamiHato.Server.Controllers
             [JsonConverter(typeof(UlidJsonConverter))]
             public Ulid MsgId { get; set; }
             public DateTimeOffset timestamp { get; set; }
+            public List<(string, string)> FailedChannels { get; set; }
         }
 
         [HttpPost]
@@ -163,10 +168,16 @@ namespace Karenia.TegamiHato.Server.Controllers
         {
             if (!Ulid.TryParse(id, out var _id)) return BadRequest();
             var msgId = await this._db.SaveMessageIntoChannel(message, _id);
+
+            // Send message to channel
+            var channelEmails = await recvAdaptor.GetEmailsFromChannelIds(new[] { _id });
+            var failed = await recvAdaptor.SendEmail(message, channelEmails);
+
             return Ok(new SendMessageResult()
             {
                 MsgId = msgId,
-                timestamp = msgId.Time
+                timestamp = msgId.Time,
+                FailedChannels = failed
             });
         }
 
