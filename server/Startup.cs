@@ -82,7 +82,7 @@ namespace Karenia.TegamiHato.Server
 
                     services.AddSingleton<EmailSendingService>((srv) => new EmailSendingService(domain, apiKey, srv.GetService<ILogger<EmailSendingService>>()));
 
-                    services.AddSingleton<EmailRecvAdaptor>();
+                    services.AddScoped<EmailRecvAdaptor>();
                 }
             }
 
@@ -176,9 +176,6 @@ namespace Karenia.TegamiHato.Server
 
             app.UseRouting();
             app.UseIdentityServer();
-
-            // Warm up
-            app.ApplicationServices.GetService<MailingChannelService>();
 
             app.UseAuthorization();
             app.UseAuthentication();

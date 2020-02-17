@@ -10,6 +10,7 @@ namespace Karenia.TegamiHato.Server.Services
 {
     public class ObjectStorageService
     {
+        private const string AttachmentFolder = "att";
         private readonly MinioClient client;
         private readonly string baseDomain;
         private readonly string spaceName;
@@ -27,14 +28,15 @@ namespace Karenia.TegamiHato.Server.Services
 
         private readonly Regex FilenameRegex = new Regex("^(?<filename>.+)\\.(?<extension>\\w+)$");
 
-        public async Task<string> PutAttachment(Ulid id, string filename, Stream data, long size, string contentType)
+        public async Task<string> PutAttachment(Ulid id, string filename, Stream data, long size, string? contentType)
         {
             string key;
             var filenameMatchResult = FilenameRegex.Match(filename);
             if (filenameMatchResult.Success)
             {
                 key = string.Format(
-                    "{0}_{1}.{2}",
+                    "{0}/{1}_{2}.{3}",
+                    AttachmentFolder,
                     filenameMatchResult.Groups["filename"].Value,
                     id,
                     filenameMatchResult.Groups["extension"].Value);
@@ -45,9 +47,13 @@ namespace Karenia.TegamiHato.Server.Services
             }
             return await PutObject(key, data, size, contentType);
         }
-        public async Task<string> PutObject(string key, Stream data, long size, string contentType)
+        public async Task<string> PutObject(string key, Stream data, long size, string? contentType)
         {
-            await this.client.PutObjectAsync(spaceName, key, data, size, contentType);
+            await this.client.PutObjectAsync(
+                spaceName, key, data, size, contentType, new Dictionary<string, string>()
+                {
+                    ["x-amz-acl"] = "public-read"
+                });
             return $"{spaceName}.{baseDomain}/{key}";
         }
     }
