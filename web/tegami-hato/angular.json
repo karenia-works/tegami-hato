@@ -22,21 +22,13 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "aot": false,
+            "aot": true,
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "./assets/",
-                "output": "./assets/"
-              },
-              {
-                "glob": "favicon.ico",
-                "input": "./",
-                "output": "./"
-              },
+              "src/favicon.ico",
+              "src/assets/",
               {
                 "glob": "mdi.svg",
-                "input": "../node_modules/@mdi/angular-material",
+                "input": "node_modules/@mdi/angular-material",
                 "output": "./assets"
               }
             ],
