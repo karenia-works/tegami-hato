@@ -146,7 +146,7 @@ namespace Karenia.TegamiHato.Server.Services
                             && (message.MsgId.CompareTo(start) < 0));
 
             partial = partial.Take(count)
-                .Include(msg => msg.attachments);
+                .Include(msg => msg.LinkedAttachments);
 
             if (ascending)
                 return partial
@@ -158,9 +158,9 @@ namespace Karenia.TegamiHato.Server.Services
                     .AsAsyncEnumerable();
         }
 
-        public async Task SaveMessageIntoChannel(HatoMessage message)
+        public async Task<Ulid> SaveMessageIntoChannel(HatoMessage message)
         {
-            await SaveMessageIntoChannel(message, Ulid.Empty);
+            return await SaveMessageIntoChannel(message, Ulid.Empty);
         }
 
         /// <summary>

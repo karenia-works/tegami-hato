@@ -20,11 +20,16 @@ namespace Karenia.TegamiHato.Server.Controllers
     {
         private readonly ObjectStorageService oss;
         private readonly DatabaseService db;
+        private readonly EmailSendingService send;
 
-        public AttachmentController(ObjectStorageService oss, DatabaseService db)
+        public AttachmentController(
+            ObjectStorageService oss,
+            DatabaseService db,
+            EmailSendingService send)
         {
             this.oss = oss;
             this.db = db;
+            this.send = send;
         }
 
         [HttpPost]

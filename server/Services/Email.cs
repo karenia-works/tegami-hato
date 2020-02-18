@@ -185,6 +185,7 @@ namespace Karenia.TegamiHato.Server.Services
         {
         }
 
+
     }
 
     public class EmailRecvEvent

@@ -13,6 +13,7 @@ using System.Linq;
 using Karenia.TegamiHato.Server.Services;
 using System.Threading.Tasks;
 using System.Text;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Karenia.TegamiHato.Server.Models
 {
@@ -27,9 +28,23 @@ namespace Karenia.TegamiHato.Server.Models
         public string Url { get; set; }
         public string ContentType { get; set; }
         public long Size { get; set; }
+        public bool IsAvailable { get; set; }
 
-        [JsonIgnore]
-        public virtual HatoMessage? _HatoMessage { get; set; } = null;
+        public virtual ICollection<AttachmentMessageRelation> LinkedMessages { get; set; }
+    }
+
+    public class AttachmentMessageRelation
+    {
+        [JsonConverter(typeof(UlidJsonConverter))]
+        public Ulid RelId { get; set; }
+
+        [JsonConverter(typeof(UlidJsonConverter))]
+        public Ulid AttachmentId { get; set; }
+
+        [JsonConverter(typeof(UlidJsonConverter))]
+        public Ulid MsgId { get; set; }
+        public HatoAttachment Attachment { get; set; }
+        public HatoMessage Message { get; set; }
     }
 
     public class HatoMessageAbbr
@@ -59,42 +74,16 @@ namespace Karenia.TegamiHato.Server.Models
 
         public string? BodyHtml { get; set; }
 
-        public virtual ICollection<HatoAttachment> attachments { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<AttachmentMessageRelation> LinkedAttachments { get; set; }
+
+        [NotMapped]
+        public IList<HatoAttachment> Attachments { get; set; }
 
         [JsonIgnore]
         public NpgsqlTsVector? tsvector { get; set; }
 
-        public async Task<EmailData> ToEmailData(EmailRecvService recvService)
-        {
-            var data = new EmailData();
 
-            data.FromAddress = new Address(
-                $"{_Channel?.ChannelUsername ?? this.ChannelId.ToString()}@{recvService.Domain}",
-                _Channel?.ChannelTitle);
-
-            if (BodyHtml != null)
-            {
-                data.IsHtml = true;
-                data.Body = BodyHtml;
-                data.PlaintextAlternativeBody = BodyPlain;
-            }
-            else
-            {
-                data.IsHtml = false;
-                data.Body = BodyPlain;
-                data.PlaintextAlternativeBody = null;
-            }
-            data.Attachments = (await Task.WhenAll(
-                attachments
-                .Select(async att => new Attachment()
-                {
-                    Filename = att.Filename,
-                    ContentId = att.AttachmentId.ToString(),
-                    ContentType = att.ContentType,
-                    Data = await recvService.GetAttachment(att.Url)
-                }))).ToList();
-            return data;
-        }
     }
 
     public class RecentMessageViewItem
@@ -199,7 +188,8 @@ namespace Karenia.TegamiHato.Server.Models
         public DbSet<User> Users { get; set; }
         public DbSet<ChannelUserRelation> ChannelUserTable { get; set; }
         public DbSet<HatoAttachment> Attachments { get; set; }
-        // public DbSet<UserLoginCode> LoginCodes { get; set; }
+        public DbSet<UserLoginCode> LoginCodes { get; set; }
+        public DbSet<AttachmentMessageRelation> AttachmentRelations { get; set; }
 
         public DbSet<RecentMessageViewItem> RecentMessages { get; set; }
 
@@ -245,7 +235,6 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<HatoAttachment>().HasKey(x => x.AttachmentId);
             modelBuilder.Entity<HatoAttachment>().HasIndex(x => x.AttachmentId);
             modelBuilder.Entity<HatoAttachment>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<HatoAttachment>().HasOne(x => x._HatoMessage).WithMany(x => x.attachments);
 
             modelBuilder.Entity<ChannelUserRelation>().HasKey(x => new { x.UserId, x.ChannelId });
             modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => new { x.UserId, x.ChannelId });
@@ -255,6 +244,15 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._Channel).WithMany(u => u._Users).HasForeignKey(u => u.ChannelId);
             modelBuilder.Entity<ChannelUserRelation>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<ChannelUserRelation>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+
+            modelBuilder.Entity<AttachmentMessageRelation>().HasKey(x => new { x.AttachmentId, x.MsgId });
+            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => new { x.AttachmentId, x.MsgId });
+            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.AttachmentId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.MsgId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Message).WithMany(u => u.LinkedAttachments).HasForeignKey(u => u.AttachmentId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Attachment).WithMany(u => u.LinkedMessages).HasForeignKey(u => u.MsgId);
+            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
 
             modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);

@@ -159,6 +159,18 @@ namespace Karenia.TegamiHato.Server.Controllers
             public List<(string, string)> FailedChannels { get; set; }
         }
 
+        public class ApiSendMessage
+        {
+            public string? title { get; set; }
+
+            public string bodyPlain { get; set; }
+
+            public string? bodyHtml { get; set; }
+
+            public List<string> attachments { get; set; }
+
+        }
+
         [HttpPost]
         [Route("message")]
         public async Task<IActionResult> SendMessage(

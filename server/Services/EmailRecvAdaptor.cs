@@ -8,6 +8,9 @@ using System;
 using System.Threading.Tasks;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using FluentEmail.Core.Models;
+using System.IO;
+using System.Net.Http;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -16,11 +19,13 @@ namespace Karenia.TegamiHato.Server.Services
         public EmailRecvAdaptor(
             EmailRecvService recv,
             EmailSendingService send,
+            ObjectStorageService oss,
             DatabaseService db,
             ILogger<EmailRecvAdaptor> logger)
         {
             this.recv = recv;
             this.send = send;
+            this.oss = oss;
             this.db = db;
             this.logger = logger;
             this.AdaptServices();
@@ -28,8 +33,11 @@ namespace Karenia.TegamiHato.Server.Services
 
         private readonly EmailRecvService recv;
         private readonly EmailSendingService send;
+        private readonly ObjectStorageService oss;
         private readonly DatabaseService db;
         private readonly ILogger logger;
+
+        private HttpClient client = new HttpClient();
 
         public const int maxBodyLength = 300;
 
@@ -71,6 +79,9 @@ namespace Karenia.TegamiHato.Server.Services
                 BodyPlain = email.BodyPlain,
             };
 
+            var attachments = await UploadAndSaveAttachments(email);
+            msg.Attachments = attachments;
+
             foreach (var channel in allTargetChannels)
             {
                 msg._Channel = channel;
@@ -80,11 +91,34 @@ namespace Karenia.TegamiHato.Server.Services
 
             List<IGrouping<string, string>> allTargetEmails = await GetEmailsFromChannelIds(allTargetChannelIds);
 
-            await SendEmailAndFailure(email, senderEmail, senderNickname, msg, allTargetEmails);
+            await SendEmailAndFailure(senderEmail, senderNickname, msg, allTargetEmails);
         }
 
-        private async Task SendEmailAndFailure(
-            MailgunEmailRaw email,
+        public async Task<List<HatoAttachment>> UploadAndSaveAttachments(MailgunEmailRaw email)
+        {
+            var atts = new List<HatoAttachment>();
+            foreach (var att in email.Attachments)
+            {
+                var id = Ulid.NewUlid();
+                var fileStream = await recv.GetAttachment(att.Url);
+                var url = await oss.PutAttachment(id, att.Name, fileStream, att.Size, att.ContentType);
+                var attachment = new HatoAttachment()
+                {
+                    AttachmentId = id,
+                    Filename = att.Name,
+                    Url = url,
+                    ContentType = att.ContentType,
+                    Size = att.Size,
+                    IsAvailable = true
+                };
+                atts.Add(attachment);
+            }
+            db.db.Attachments.AddRange(atts);
+            return atts;
+        }
+
+
+        public async Task SendEmailAndFailure(
             string senderEmail,
             string senderNickname,
             HatoMessage msg,
@@ -94,13 +128,13 @@ namespace Karenia.TegamiHato.Server.Services
             if (failedSendChannels.Count > 0)
             {
                 string strippedBody;
-                if (email.BodyPlain.Length > maxBodyLength)
+                if (msg.BodyPlain.Length > maxBodyLength)
                 {
-                    strippedBody = email.BodyPlain.Substring(0, 200) + "...";
+                    strippedBody = msg.BodyPlain.Substring(0, 200) + "...";
                 }
                 else
                 {
-                    strippedBody = email.BodyPlain;
+                    strippedBody = msg.BodyPlain;
                 }
 
                 foreach ((var name, var reason) in failedSendChannels)
@@ -111,7 +145,7 @@ namespace Karenia.TegamiHato.Server.Services
                         name,
                         strippedBody,
                         reason,
-                        email.Date);
+                        msg.Timestamp);
                 }
 
             }
@@ -130,11 +164,51 @@ namespace Karenia.TegamiHato.Server.Services
             return allTargetEmails;
         }
 
+        public EmailData HatoMessageToEmailDataPartial(HatoMessage msg)
+        {
+            var data = new EmailData();
+
+            data.FromAddress = new Address(
+                $"{msg._Channel?.ChannelUsername ?? msg.ChannelId.ToString()}@{recv.Domain}",
+                msg._Channel?.ChannelTitle);
+
+            if (msg.BodyHtml != null)
+            {
+                data.IsHtml = true;
+                data.Body = msg.BodyHtml;
+                data.PlaintextAlternativeBody = msg.BodyPlain;
+            }
+            else
+            {
+                data.IsHtml = false;
+                data.Body = msg.BodyPlain;
+                data.PlaintextAlternativeBody = null;
+            }
+            return data;
+        }
 
         private async Task SaveEmail(HatoMessage msg)
         {
             await this.db.SaveMessageIntoChannel(msg);
+            foreach (var att in msg.Attachments)
+            {
+                this.db.db.AttachmentRelations.Add(new AttachmentMessageRelation()
+                {
+                    AttachmentId = att.AttachmentId,
+                    MsgId = msg.MsgId,
+                    RelId = Ulid.NewUlid()
+                });
+            }
         }
+
+
+
+        public async Task<Stream> GetAttachment(string url)
+        {
+            var req = await client.GetAsync(url);
+            return await req.Content.ReadAsStreamAsync();
+        }
+
 
         /// <summary>
         /// Send email to target channels
@@ -147,7 +221,18 @@ namespace Karenia.TegamiHato.Server.Services
             var failedChannels = new List<(string, string)>();
             foreach (var group in targetEmails)
             {
-                var email = await msg.ToEmailData(recv);
+                var email = HatoMessageToEmailDataPartial(msg);
+
+                email.Attachments = (await Task.WhenAll(msg.Attachments.Select(async att =>
+                     new Attachment()
+                     {
+                         ContentId = att.AttachmentId.ToString(),
+                         ContentType = att.ContentType,
+                         Data = await GetAttachment(att.Url),
+                         Filename = att.Filename,
+                         IsInline = false
+                     }))).ToList();
+
                 var result = await send.SendEmail(email, group.ToList(), group.Key);
                 if (!result.Successful)
                     failedChannels.Add(
@@ -166,7 +251,7 @@ namespace Karenia.TegamiHato.Server.Services
             string channelName,
             string summary,
             string reason,
-            DateTime sendTime)
+            DateTimeOffset sendTime)
         {
             var timeRepr = sendTime.ToUniversalTime().ToString();
             var email = new FluentEmail.Core.Email($"{channelName}@{send.Domain}")
