@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using FluentEmail.Core.Models;
 using System.IO;
 using System.Net.Http;
+using System.Collections;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -92,6 +93,7 @@ namespace Karenia.TegamiHato.Server.Services
             List<IGrouping<string, string>> allTargetEmails = await GetEmailsFromChannelIds(allTargetChannelIds);
 
             await SendEmailAndFailure(senderEmail, senderNickname, msg, allTargetEmails);
+            await db.db.SaveChangesAsync();
         }
 
         public async Task<List<HatoAttachment>> UploadAndSaveAttachments(MailgunEmailRaw email)
@@ -113,7 +115,7 @@ namespace Karenia.TegamiHato.Server.Services
                 };
                 atts.Add(attachment);
             }
-            db.db.Attachments.AddRange(atts);
+            await this.db.AddAttachmentEntries(atts);
             return atts;
         }
 
@@ -151,17 +153,41 @@ namespace Karenia.TegamiHato.Server.Services
             }
         }
 
+        public class CustomLittleGroup<TK, TV> : IGrouping<TK, TV>
+        {
+            public CustomLittleGroup(TK key, ICollection<TV> val)
+            {
+                this.key = key; this.val = val;
+            }
+            TK key;
+            ICollection<TV> val;
+
+            public TK Key => key;
+
+            public IEnumerator<TV> GetEnumerator()
+            {
+                return val.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return val.GetEnumerator();
+            }
+        }
+
         public async Task<List<IGrouping<string, string>>> GetEmailsFromChannelIds(IList<Ulid> channelIds)
         {
             var allTargetEmails = await this.
                db.db.ChannelUserTable
-               .Where(u => channelIds.Contains(u.ChannelId))
-               .Include(entry => entry._User)
-               .GroupBy(
-                   entry => entry._Channel.ChannelUsername ?? entry.ChannelId.ToString(),
-                   entry => entry._User.Email)
+               .Where(u => channelIds.Contains(u.ChannelId) && u.CanReceiveMessage)
+               .Include(u => u._User)
+               .Include(u => u._Channel)
                .ToListAsync();
-            return allTargetEmails;
+            var resultEmails = allTargetEmails.GroupBy(
+                entry => entry._Channel.ChannelUsername ?? entry.ChannelId.ToString(),
+                entry => entry._User.Email
+            ).ToList();
+            return resultEmails;
         }
 
         public EmailData HatoMessageToEmailDataPartial(HatoMessage msg)
@@ -171,6 +197,7 @@ namespace Karenia.TegamiHato.Server.Services
             data.FromAddress = new Address(
                 $"{msg._Channel?.ChannelUsername ?? msg.ChannelId.ToString()}@{recv.Domain}",
                 msg._Channel?.ChannelTitle);
+            data.Subject = msg.Title;
 
             if (msg.BodyHtml != null)
             {
@@ -205,6 +232,8 @@ namespace Karenia.TegamiHato.Server.Services
 
         public async Task<Stream> GetAttachment(string url)
         {
+            if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+                url = "http://" + url;
             var req = await client.GetAsync(url);
             return await req.Content.ReadAsStreamAsync();
         }
@@ -222,6 +251,7 @@ namespace Karenia.TegamiHato.Server.Services
             foreach (var group in targetEmails)
             {
                 var email = HatoMessageToEmailDataPartial(msg);
+                if (group.Count() == 0) continue;
 
                 email.Attachments = (await Task.WhenAll(msg.Attachments.Select(async att =>
                      new Attachment()

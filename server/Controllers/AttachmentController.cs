@@ -47,11 +47,19 @@ namespace Karenia.TegamiHato.Server.Controllers
             }
             Ulid id = Ulid.NewUlid();
             var path = await this.oss.PutAttachment(id, filename, fileStream, contentLength, contentType);
-            return Created(path, new
+
+            var att = new HatoAttachment()
             {
-                path,
-                size = contentLength,
-            });
+                AttachmentId = id,
+                Filename = filename,
+                Url = path,
+                ContentType = contentType,
+                Size = contentLength,
+                IsAvailable = true
+            };
+            await this.db.AddAttachmentEntry(att);
+
+            return Created(path, att);
         }
     }
 }

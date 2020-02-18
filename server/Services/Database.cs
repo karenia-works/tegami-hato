@@ -127,7 +127,7 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="count">Count of message, defaults to 20</param>
         /// <param name="ascending">Whether to get messages in time ascending order; default to false</param>
         /// <returns></returns>
-        public IAsyncEnumerable<HatoMessage> GetMessageFromChannel(Ulid channelId, Ulid start, int count = 20, bool ascending = false)
+        public async Task<IList<HatoMessage>> GetMessageFromChannelAsync(Ulid channelId, Ulid start, int count = 20, bool ascending = false)
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
@@ -145,17 +145,26 @@ namespace Karenia.TegamiHato.Server.Services
                             (message.ChannelId == channelId)
                             && (message.MsgId.CompareTo(start) < 0));
 
-            partial = partial.Take(count)
-                .Include(msg => msg.LinkedAttachments);
-
             if (ascending)
-                return partial
-                    .OrderBy(message => message.MsgId)
-                    .AsAsyncEnumerable();
+                partial = partial.OrderBy(message => message.MsgId);
             else
-                return partial
-                    .OrderByDescending(message => message.MsgId)
-                    .AsAsyncEnumerable();
+                partial = partial.OrderByDescending(message => message.MsgId);
+
+            partial = partial
+                .Include(msg => msg.LinkedAttachments).ThenInclude(att => att.Attachment);
+            partial = partial.Take(count);
+
+            var msgs = await partial.ToListAsync();
+            msgs.ForEach(
+                p =>
+                {
+                    p.Attachments = p.LinkedAttachments
+                        .Select(rel => rel.Attachment)
+                        .ToList();
+                    foreach (var att in p.Attachments) { att.LinkedMessages = null; }
+                    p.LinkedAttachments = null;
+                });
+            return msgs;
         }
 
         public async Task<Ulid> SaveMessageIntoChannel(HatoMessage message)
@@ -171,7 +180,8 @@ namespace Karenia.TegamiHato.Server.Services
         /// <returns></returns>
         public async Task<Ulid> SaveMessageIntoChannel(HatoMessage message, Ulid channelId)
         {
-            message.MsgId = Ulid.NewUlid();
+            if (message.MsgId == Ulid.Empty)
+                message.MsgId = Ulid.NewUlid();
             if (channelId != Ulid.Empty)
             {
                 message.ChannelId = channelId;
@@ -340,6 +350,24 @@ namespace Karenia.TegamiHato.Server.Services
             //     .DeleteAsync();
 
             return result > 0;
+        }
+
+        public async Task<IList<HatoAttachment>> GetAttachmentsFromIdAsync(IList<Ulid> ids)
+        {
+            return await this.db.Attachments.Where(att => ids.Contains(att.AttachmentId))
+                .ToListAsync();
+        }
+
+        public async Task AddAttachmentEntry(HatoAttachment attachment)
+        {
+            db.Attachments.Add(attachment);
+            await this.db.SaveChangesAsync();
+        }
+
+        public async Task AddAttachmentEntries(IEnumerable<HatoAttachment> attachments)
+        {
+            db.Attachments.AddRange(attachments);
+            await this.db.SaveChangesAsync();
         }
     }
 }

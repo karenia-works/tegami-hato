@@ -173,13 +173,45 @@ namespace Karenia.TegamiHato.Server.Controllers
 
         [HttpPost]
         [Route("message")]
+        [Authorize("api")]
         public async Task<IActionResult> SendMessage(
             [FromRoute] string id,
-            [FromBody] HatoMessage message
+            [FromBody] ApiSendMessage apiMessage
         )
         {
             if (!Ulid.TryParse(id, out var _id)) return BadRequest();
-            var msgId = await this._db.SaveMessageIntoChannel(message, _id);
+            var userId = Ulid.Parse(HttpContext.User.Claims.Where(claim => claim.Type == "sub")
+                   .Select(claim => claim.Value)
+                   .Single());
+            User userInfo = (await this._db.GetUser(userId))!;
+
+            var attachments = await this._db.GetAttachmentsFromIdAsync
+                (apiMessage.attachments.Select(id => Ulid.Parse(id))
+                .ToList());
+
+            Ulid msgId = Ulid.NewUlid();
+            var message = new HatoMessage()
+            {
+                MsgId = msgId,
+                ChannelId = _id,
+                Title = apiMessage.title,
+                BodyHtml = apiMessage.bodyHtml,
+                BodyPlain = apiMessage.bodyPlain,
+                Attachments = attachments,
+                SenderEmail = userInfo.Email,
+                SenderNickname = userInfo.Nickname,
+            };
+            await this._db.SaveMessageIntoChannel(message, _id);
+
+            // HACK: Attachment are inserted directly!
+            // TODO: Change it into a single call
+            this._db.db.AttachmentRelations.AddRange(attachments.Select(att => new AttachmentMessageRelation()
+            {
+                AttachmentId = att.AttachmentId,
+                RelId = Ulid.NewUlid(),
+                MsgId = msgId
+            }));
+            await this._db.db.SaveChangesAsync();
 
             // Send message to channel
             var channelEmails = await recvAdaptor.GetEmailsFromChannelIds(new[] { _id });
@@ -196,7 +228,7 @@ namespace Karenia.TegamiHato.Server.Controllers
 
         [HttpGet]
         [Route("message")]
-        public IActionResult GetRecentMessage(
+        public async Task<IActionResult> GetRecentMessageAsync(
             [FromRoute] string id,
              string startId = "7fffffffffffffffffffffffff",
              int count = 20,
@@ -207,7 +239,8 @@ namespace Karenia.TegamiHato.Server.Controllers
             {
                 if (Ulid.TryParse(startId, out var _startId))
                 {
-                    return Ok(this._db.GetMessageFromChannel(_id, _startId, count, ascending));
+                    IList<HatoMessage> value = await _db.GetMessageFromChannelAsync(_id, _startId, count, ascending);
+                    return base.Ok(value);
                 }
                 else
                 {

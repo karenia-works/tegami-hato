@@ -30,6 +30,7 @@ namespace Karenia.TegamiHato.Server.Models
         public long Size { get; set; }
         public bool IsAvailable { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<AttachmentMessageRelation> LinkedMessages { get; set; }
     }
 
@@ -43,7 +44,10 @@ namespace Karenia.TegamiHato.Server.Models
 
         [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid MsgId { get; set; }
+
+        [JsonIgnore]
         public HatoAttachment Attachment { get; set; }
+        [JsonIgnore]
         public HatoMessage Message { get; set; }
     }
 
@@ -64,7 +68,7 @@ namespace Karenia.TegamiHato.Server.Models
 
         // public List<Address> Receivers { get; set; }
 
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         public string BodyPlain { get; set; }
     }
@@ -188,7 +192,6 @@ namespace Karenia.TegamiHato.Server.Models
         public DbSet<User> Users { get; set; }
         public DbSet<ChannelUserRelation> ChannelUserTable { get; set; }
         public DbSet<HatoAttachment> Attachments { get; set; }
-        public DbSet<UserLoginCode> LoginCodes { get; set; }
         public DbSet<AttachmentMessageRelation> AttachmentRelations { get; set; }
 
         public DbSet<RecentMessageViewItem> RecentMessages { get; set; }
@@ -249,10 +252,11 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => new { x.AttachmentId, x.MsgId });
             modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.AttachmentId);
             modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.MsgId);
-            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Message).WithMany(u => u.LinkedAttachments).HasForeignKey(u => u.AttachmentId);
-            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Attachment).WithMany(u => u.LinkedMessages).HasForeignKey(u => u.MsgId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Message).WithMany(u => u.LinkedAttachments).HasForeignKey(u => u.MsgId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Attachment).WithMany(u => u.LinkedMessages).HasForeignKey(u => u.AttachmentId);
             modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.RelId).HasConversion(UlidGuidConverter);
 
             modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
             modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
