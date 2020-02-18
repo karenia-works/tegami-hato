@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.styl']
 })
+
 export class NavbarComponent implements OnInit {
   isloggedIn = true;
   constructor() { }

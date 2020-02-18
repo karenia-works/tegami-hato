@@ -57,11 +57,13 @@ generate-font-size(size-base) {
 
 .base-theme {
   // Fonts
-  --theme-font: 'Sarasa UI SC', 'Noto Sans', 'San Fransisco', 'Segoe UI', 'Source Han Sans SC', 'Microsoft Yahei UI', sans-serif;
+  --theme-font: 'Source Han Sans CN', 'Sarasa UI SC', 'Noto Sans', 'San Fransisco', 'Segoe UI', 'Microsoft Yahei UI', sans-serif;
   // padding
   // theme-pad-base: 8px
   generate-padding: 8px;
   generate-font-size: 12px;
+
+  --theme-textbox-size: 14px;
   // pages
   --theme-page-lg: theme-page-lg;
   --theme-page-md: theme-page-md;
@@ -265,7 +267,7 @@ textbox-default-accent-color = var(--theme-accent);
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: var(--theme-pad-02) var(--theme-textbox-pad);
+  padding: var(--theme-pad-01) var(--theme-textbox-pad);
   background-color: var(--textbox-bg-color, textbox-default-background-color);
   color: var(--textbox-text-color, textbox-default-text-color);
   border-style: solid;
@@ -274,7 +276,7 @@ textbox-default-accent-color = var(--theme-accent);
   border-radius: 4px;
   font-family: inherit;
   font-weight: normal;
-  font-size: var(--theme-size-base);
+  font-size: var(--theme-textbox-size);
   transition: border-color 150ms ease-in-out;
 
   &::placeholder {

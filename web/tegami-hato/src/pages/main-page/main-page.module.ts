@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MainPageComponent } from './main-page.component';
-import { BaseComponentsModule } from 'src/components/base-components.module';
+import { SearchbarModule } from '../../components/searchbar/searchbar.module';
 
 @NgModule({
   declarations: [MainPageComponent,],
   imports: [
     CommonModule,
-    BaseComponentsModule,
+    SearchbarModule
   ],
   exports: [MainPageComponent]
 })
