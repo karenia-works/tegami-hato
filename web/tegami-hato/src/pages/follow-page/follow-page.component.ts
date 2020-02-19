@@ -14,7 +14,6 @@ export class FollowPageComponent implements OnInit {
 
   getTime(msgId: string) {
     let time = moment(decodeTime(msgId));
-    moment.locale('zh-cn');
     if (moment().diff(time, 'days') < 3)
       return time.fromNow();
     else if(time.isAfter(moment().startOf('year')))
@@ -26,6 +25,7 @@ export class FollowPageComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    moment.locale('zh-cn');
   }
 
 }

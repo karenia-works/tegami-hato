@@ -1,11 +1,18 @@
 import { NgModule } from "@angular/core";
 import { Routes, RouterModule } from "@angular/router";
-import { MainPageComponent } from "src/pages/main-page/main-page.component";
 import { MainPageModule } from "src/pages/main-page/main-page.module";
-import { GroupPageComponent } from "src/pages/group-page/group-page.component";
+import { MainPageComponent } from "src/pages/main-page/main-page.component";
 import { GroupPageModule } from "src/pages/group-page/group-page.module";
-import { FollowPageComponent } from "src/pages/follow-page/follow-page.component";
+import { GroupPageComponent } from "src/pages/group-page/group-page.component";
 import { FollowPageModule } from "src/pages/follow-page/follow-page.module";
+import { FollowPageComponent } from "src/pages/follow-page/follow-page.component";
+import { LoginPageModule } from "src/pages/login-page/login-page.module";
+import { LoginPageComponent } from "src/pages/login-page/login-page.component";
+import { SettingPageModule } from "src/pages/setting-page/setting-page.module";
+import { SettingPageComponent } from "src/pages/setting-page/setting-page.component";
+import { MePageModule } from "src/pages/me-page/me-page.module";
+import { MePageComponent } from "src/pages/me-page/me-page.component";
+
 
 const routes: Routes = [
   {
@@ -13,12 +20,24 @@ const routes: Routes = [
     component: MainPageComponent
   },
   {
-    path: "g",
+    path: "follow",
+    component: FollowPageComponent
+  },
+  {
+    path: "channel/:channelId",
     component: GroupPageComponent
   },
   {
-    path: "follow",
-    component: FollowPageComponent
+    path: "login",
+    component: LoginPageComponent
+  },
+  {
+    path: "channel/:channelId/setting",
+    component: SettingPageComponent
+  },
+  {
+    path: "me",
+    component: MePageComponent
   }
 ];
 
@@ -27,7 +46,10 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     MainPageModule,
     GroupPageModule,
-    FollowPageModule
+    FollowPageModule, 
+    LoginPageModule,
+    SettingPageModule,
+    MePageModule
   ],
   exports: [RouterModule]
 })

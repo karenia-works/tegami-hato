@@ -12,7 +12,10 @@
         <span class="title">{{chl.channelTitle}}</span>
         <span class="time">{{getTime(chl.msgId)}}</span>
       </div>
-      <span class="message">{{chl.bodyPlain}}</span>
+      <span class="message">
+        <span class="sender">{{chl.senderNickname}}：</span>
+        {{chl.bodyPlain}}
+      </span>
     </div>
   </div>
 </div>

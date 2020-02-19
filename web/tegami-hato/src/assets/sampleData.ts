@@ -3,40 +3,46 @@ export const recentMessages = [
         "channelId": "01E142V9Y1QAWE191250JDCDDJ",
         "channelTitle": "Test username",
         "msgId": "01E1733H9MNV21M9JKC24BNF57",
-        "bodyPlain": "plain"
+        "bodyPlain": "plain",
+        "title": "title",
+        "senderNickname" : "ying",
+        "senderEmail" : "ying@ying.com"
     },
     {
         "channelId": "01E175XZQJHXTBSQ33E68X6H0K",
         "channelTitle": "Test",
         "msgId": "01E17668GM8474SNQDY9KRDQVE",
-        "bodyPlain": "test msg 2"
+        "bodyPlain": "test msg 2",
+        "title": "title",
+        "senderNickname" : "ying",
+        "senderEmail" : "ying@ying.com"
     }
 ];
 
 export const channelMessages = [
     {
-        "bodyHtml": "<p>Can you see me?</p>",
-        "attachments": [],
         "msgId": "01E1733H9MNV21M9JKC24BNF57",
-        "_Channel": null,
         "channelId": "01E142V9Y1QAWE191250JDCDDJ",
         "timestamp": "2020-02-15T09:28:36.545+00:00",
         "senderEmail": "i!rynco.me",
         "senderNickname": "rynco",
         "title": "none",
-        "bodyPlain": "plain"
+        "bodyPlain": "plain",
+        "bodyHtml": "<p>Can you see me?</p>",
+        "attachments": [],
+        "tags": [],
     },
     {
-        "bodyHtml": "<p>Can you see me?</p>",
-        "attachments": [],
         "msgId": "01E1733H9MNV21M9JKC24BNF57",
-        "_Channel": null,
         "channelId": "01E142V9Y1QAWE191250JDCDDJ",
         "timestamp": "2020-02-15T09:28:36.545+00:00",
         "senderEmail": "i!rynco.me",
         "senderNickname": "rynco",
         "title": "none",
-        "bodyPlain": "plain"
+        "bodyPlain": "plain",
+        "bodyHtml": "<p>Can you see me?</p>",
+        "attachments": [],
+        "tags": [],
     }
 ];
 
