@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using Z.EntityFramework.Plus;
+using System.Collections;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -283,6 +284,31 @@ namespace Karenia.TegamiHato.Server.Services
             return result;
         }
 
+        public class SimpleGroup<TK, TV> : IGrouping<TK, TV>
+        {
+            public SimpleGroup(TK key, List<TV> values)
+            {
+                Key = key;
+                Values = values;
+            }
+
+            TK Key { get; set; }
+            List<TV> Values { get; set; }
+
+            TK IGrouping<TK, TV>.Key => this.Key;
+
+
+            public IEnumerator<TV> GetEnumerator()
+            {
+                return this.Values.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.Values.GetEnumerator();
+            }
+        }
+
         public async Task<List<IGrouping<string, string>>> GetAllReceiverEmails(
             ICollection<Ulid> channelIds)
         {
@@ -292,8 +318,14 @@ namespace Karenia.TegamiHato.Server.Services
                 .Where(entry =>
                    channelIds.Contains(entry.ChannelId)
                     && ((entry.Permission & UserPermission.Receive) != 0))
+                .Include(entry => entry._Channel)
+                .Include(entry => entry._User)
+                .AsAsyncEnumerable()
                 .GroupBy(entry => entry._Channel.ChannelUsername, entry => entry._User.Email)
-                .ToListAsync();
+                .SelectAwait(async entry =>
+                    (IGrouping<string, string>)
+                    new SimpleGroup<string, string>(entry.Key, await entry.ToListAsync())
+                ).ToListAsync();
 
             return await result;
         }
@@ -393,7 +425,8 @@ namespace Karenia.TegamiHato.Server.Services
                 {
                     UserId = Ulid.NewUlid(),
                     Email = userEmail,
-                    Nickname = null
+                    Nickname = null,
+                    _LoginCodes = new List<UserLoginCode>()
                 };
                 db.Add(user);
             }

@@ -176,7 +176,7 @@ namespace Karenia.TegamiHato.Server.Controllers
             public string? bodyHtml { get; set; }
 
             public List<string> attachments { get; set; }
-
+            public List<string> tags { get; set; }
         }
 
         [HttpPost]
@@ -208,6 +208,7 @@ namespace Karenia.TegamiHato.Server.Controllers
                 Attachments = attachments,
                 SenderEmail = userInfo.Email,
                 SenderNickname = userInfo.Nickname,
+                Tags = apiMessage.tags,
             };
             await this._db.SaveMessageIntoChannel(message, _id);
 

@@ -21,6 +21,7 @@ namespace Karenia.TegamiHato.Server.Services
                 AllowedScopes = {
                     "api"
                 },
+                AccessTokenLifetime = 3600*24
             },
         };
 
