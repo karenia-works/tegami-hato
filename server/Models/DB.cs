@@ -13,10 +13,21 @@ namespace Karenia.TegamiHato.Server.Models
 {
     // Disable initialization warning because we don't need that for now
 #pragma warning disable CS8618
+#pragma warning disable IDE1006
+    [Flags]
+    public enum UserPermission : uint
+    {
+        None = 0,
+        Receive = 0x01,
+        Send = 0x02,
+        Edit = 0x04,
+        UserManage = 0x08,
+        EditInfo = 0x10,
+        FullControl = 0xffffffff,
+    }
 
     public class HatoAttachment
     {
-        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid AttachmentId { get; set; }
         public string Filename { get; set; }
         public string Url { get; set; }
@@ -30,13 +41,9 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class AttachmentMessageRelation
     {
-        [JsonConverter(typeof(UlidJsonConverter))]
-        public Ulid RelId { get; set; }
-
-        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid AttachmentId { get; set; }
 
-        [JsonConverter(typeof(UlidJsonConverter))]
+
         public Ulid MsgId { get; set; }
 
         [JsonIgnore]
@@ -47,12 +54,12 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class HatoMessageAbbr
     {
-        [JsonConverter(typeof(UlidJsonConverter))]
+
         public Ulid MsgId { get; set; }
 
         public HatoChannel? _Channel { get; set; } = null;
 
-        [JsonConverter(typeof(UlidJsonConverter))]
+
         public Ulid ChannelId { get; set; }
 
         public DateTimeOffset Timestamp { get => ChannelId.Time; }
@@ -81,64 +88,77 @@ namespace Karenia.TegamiHato.Server.Models
         [JsonIgnore]
         public NpgsqlTsVector? tsvector { get; set; }
 
-
+        public List<string> Tags { get; set; }
     }
 
     public class RecentMessageViewItem
     {
-        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid ChannelId { get; set; }
 
         public string ChannelTitle { get; set; }
 
-        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid MsgId { get; set; }
 
         public string BodyPlain { get; set; }
+
+        public string? Title { get; set; }
+
+        public string SenderEmail { get; set; }
+
+        public string? SenderNickname { get; set; }
     }
 
     public class HatoChannel
     {
-        [JsonConverter(typeof(UlidJsonConverter))]
+
         public Ulid ChannelId { get; set; }
 
-        public string? ChannelUsername { get; set; }
+        public string ChannelUsername { get; set; }
 
         public string ChannelTitle { get; set; }
 
         public bool IsPublic { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<ChannelUserRelation> _Users { get; set; }
+        [JsonIgnore]
         public virtual ICollection<HatoMessage> _Messages { get; set; }
+
+        // [JsonIgnore]
+        // public virtual ICollection<ChannelRole> _Roles { get; set; }
+        // [JsonIgnore]
+        public virtual ICollection<InvitationLink> _InvitationLinks { get; set; }
+
+        public UserPermission DefaultPermission { get; set; }
+            = UserPermission.Receive;
     }
 
     public class ChannelUserRelation
     {
-        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid UserId { get; set; }
         public virtual User _User { get; set; }
 
         public Ulid ChannelId { get; set; }
         public virtual HatoChannel _Channel { get; set; }
 
-        public bool CanSendMessage { get; set; }
-        public bool CanReceiveMessage { get; set; }
-        public bool CanEditRoles { get; set; }
+        public bool ShouldReceiveMessage { get; set; }
+        public bool IsCreator { get; set; }
+
+        public UserPermission Permission { get; set; }
     }
 
     public class User
     {
-        [JsonConverter(typeof(UlidJsonConverter))]
         public Ulid UserId { get; set; }
 
-        public string Nickname { get; set; }
+        public string? Nickname { get; set; }
 
         public string Email { get; set; }
 
         public virtual ICollection<ChannelUserRelation> _Channels { get; set; }
 
         [JsonIgnore]
-        public virtual ICollection<UserLoginCode> _LoginCodes { get; set; } = null;
+        public virtual ICollection<UserLoginCode>? _LoginCodes { get; set; } = null;
     }
 
     public class UserLoginCode
@@ -177,17 +197,34 @@ namespace Karenia.TegamiHato.Server.Models
         }
     }
 
+    public class InvitationLink
+    {
+        public Ulid ChannelId { get; set; }
+
+        public string LinkId { get; set; }
+
+        public UserPermission DefaultPermission { get; set; }
+            = UserPermission.Receive;
+
+        public DateTimeOffset Expires { get; set; }
+            = new DateTimeOffset(long.MaxValue, TimeSpan.Zero);
+    }
+
     // Disable initialization warning because we don't need that for now
 
     public class EmailSystemContext : DbContext
     {
+        // ========= Tables =========
         public DbSet<HatoMessage> Messages { get; set; }
         public DbSet<HatoChannel> Channels { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<ChannelUserRelation> ChannelUserTable { get; set; }
         public DbSet<HatoAttachment> Attachments { get; set; }
         public DbSet<AttachmentMessageRelation> AttachmentRelations { get; set; }
+        public DbSet<InvitationLink> InvitationLinks { get; set; }
 
+
+        // ========= Views =========
         public DbSet<RecentMessageViewItem> RecentMessages { get; set; }
 
         public EmailSystemContext(DbContextOptions ctx) : base(ctx)
@@ -203,13 +240,76 @@ namespace Karenia.TegamiHato.Server.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<HatoMessage>().HasKey(x => x.MsgId);
-            modelBuilder.Entity<HatoMessage>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<HatoMessage>().HasOne(x => x._Channel).WithMany(x => x._Messages).HasForeignKey(x => x.ChannelId);
-            modelBuilder.Entity<HatoMessage>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<HatoMessage>().HasIndex(x => x.MsgId);
-            modelBuilder.Entity<HatoMessage>().HasIndex(x => x.tsvector).HasMethod("GIN");
+            ConfigureHatoMessage(modelBuilder);
+            ConfigureUser(modelBuilder);
+            ConfigureChannel(modelBuilder);
+            ConfigureAttachment(modelBuilder);
+            ConfigureChannelUserRelation(modelBuilder);
+            ConfigureAttachmentMessageRelation(modelBuilder);
+            ConfigureRecentMessageView(modelBuilder);
+            ConfigureInvitationLinks(modelBuilder);
+            modelBuilder.ToSnakeCase();
+        }
 
+        private void ConfigureRecentMessageView(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<RecentMessageViewItem>().HasNoKey().ToView("recent_messages");
+            modelBuilder.Entity<RecentMessageViewItem>().HasIndex(x => x.ChannelId);
+            modelBuilder.Entity<RecentMessageViewItem>().HasIndex(x => x.MsgId);
+        }
+
+        private void ConfigureInvitationLinks(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<InvitationLink>().HasKey(x => x.LinkId);
+            modelBuilder.Entity<InvitationLink>().HasIndex(x => x.LinkId);
+            modelBuilder.Entity<InvitationLink>().HasOne<HatoChannel>().WithMany(x => x._InvitationLinks).HasForeignKey(x => x.ChannelId);
+            modelBuilder.Entity<InvitationLink>().HasIndex(x => x.ChannelId);
+            modelBuilder.Entity<InvitationLink>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+        }
+
+        private void ConfigureAttachmentMessageRelation(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<AttachmentMessageRelation>().HasKey(x => new { x.AttachmentId, x.MsgId });
+            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => new { x.AttachmentId, x.MsgId });
+            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.AttachmentId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.MsgId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Message).WithMany(u => u.LinkedAttachments).HasForeignKey(u => u.MsgId);
+            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Attachment).WithMany(u => u.LinkedMessages).HasForeignKey(u => u.AttachmentId);
+            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
+        }
+
+        private void ConfigureChannelUserRelation(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ChannelUserRelation>().HasKey(x => new { x.UserId, x.ChannelId });
+            modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => new { x.UserId, x.ChannelId });
+            modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => x.UserId);
+            modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => x.ChannelId);
+            modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._User).WithMany(u => u._Channels).HasForeignKey(u => u.UserId);
+            modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._Channel).WithMany(u => u._Users).HasForeignKey(u => u.ChannelId);
+            modelBuilder.Entity<ChannelUserRelation>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<ChannelUserRelation>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+        }
+
+        private void ConfigureAttachment(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<HatoAttachment>().HasKey(x => x.AttachmentId);
+            modelBuilder.Entity<HatoAttachment>().HasIndex(x => x.AttachmentId);
+            modelBuilder.Entity<HatoAttachment>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
+        }
+
+        private void ConfigureChannel(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<HatoChannel>().HasKey(x => x.ChannelId);
+            modelBuilder.Entity<HatoChannel>().HasIndex(x => x.ChannelId);
+            modelBuilder.Entity<HatoChannel>().HasIndex(x => x.ChannelUsername);
+            modelBuilder.Entity<HatoChannel>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+        }
+
+        private void ConfigureUser(ModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<User>().HasKey(x => x.UserId);
             modelBuilder.Entity<User>().HasIndex(x => x.UserId);
             modelBuilder.Entity<User>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
@@ -223,54 +323,16 @@ namespace Karenia.TegamiHato.Server.Models
                 code.HasIndex(x => x.Code);
                 code.HasIndex(x => x.Expires);
             });
-
-            modelBuilder.Entity<HatoChannel>().HasKey(x => x.ChannelId);
-            modelBuilder.Entity<HatoChannel>().HasIndex(x => x.ChannelId);
-            modelBuilder.Entity<HatoChannel>().HasIndex(x => x.ChannelUsername);
-            modelBuilder.Entity<HatoChannel>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
-
-            modelBuilder.Entity<HatoAttachment>().HasKey(x => x.AttachmentId);
-            modelBuilder.Entity<HatoAttachment>().HasIndex(x => x.AttachmentId);
-            modelBuilder.Entity<HatoAttachment>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
-
-            modelBuilder.Entity<ChannelUserRelation>().HasKey(x => new { x.UserId, x.ChannelId });
-            modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => new { x.UserId, x.ChannelId });
-            modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => x.UserId);
-            modelBuilder.Entity<ChannelUserRelation>().HasIndex(x => x.ChannelId);
-            modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._User).WithMany(u => u._Channels).HasForeignKey(u => u.UserId);
-            modelBuilder.Entity<ChannelUserRelation>().HasOne(x => x._Channel).WithMany(u => u._Users).HasForeignKey(u => u.ChannelId);
-            modelBuilder.Entity<ChannelUserRelation>().Property(x => x.UserId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<ChannelUserRelation>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
-
-            modelBuilder.Entity<AttachmentMessageRelation>().HasKey(x => new { x.AttachmentId, x.MsgId });
-            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => new { x.AttachmentId, x.MsgId });
-            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.AttachmentId);
-            modelBuilder.Entity<AttachmentMessageRelation>().HasIndex(x => x.MsgId);
-            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Message).WithMany(u => u.LinkedAttachments).HasForeignKey(u => u.MsgId);
-            modelBuilder.Entity<AttachmentMessageRelation>().HasOne(x => x.Attachment).WithMany(u => u.LinkedMessages).HasForeignKey(u => u.AttachmentId);
-            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.AttachmentId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<AttachmentMessageRelation>().Property(x => x.RelId).HasConversion(UlidGuidConverter);
-
-            modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<RecentMessageViewItem>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<RecentMessageViewItem>().HasNoKey().ToView("recent_messages");
-            modelBuilder.Entity<RecentMessageViewItem>().HasIndex(x => x.ChannelId);
-            modelBuilder.Entity<RecentMessageViewItem>().HasIndex(x => x.MsgId);
-
-            modelBuilder.ToSnakeCase();
         }
-    }
 
-
-    public static class StringExtensions
-    {
-        public static string ToSnakeCase(this string input)
+        private void ConfigureHatoMessage(ModelBuilder modelBuilder)
         {
-            if (string.IsNullOrEmpty(input)) { return input; }
-
-            var startUnderscores = Regex.Match(input, @"^_+");
-            return startUnderscores + Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2").ToLower();
+            modelBuilder.Entity<HatoMessage>().HasKey(x => x.MsgId);
+            modelBuilder.Entity<HatoMessage>().Property(x => x.MsgId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<HatoMessage>().HasOne(x => x._Channel).WithMany(x => x._Messages).HasForeignKey(x => x.ChannelId);
+            modelBuilder.Entity<HatoMessage>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<HatoMessage>().HasIndex(x => x.MsgId);
+            modelBuilder.Entity<HatoMessage>().HasIndex(x => x.tsvector).HasMethod("GIN");
         }
     }
 #pragma warning restore CS8618

@@ -19,12 +19,14 @@ namespace Karenia.TegamiHato.Server.Models
 
     public class UlidJsonConverter : JsonConverter<Ulid>
     {
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public override Ulid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var str = reader.GetString();
             return Ulid.Parse(str);
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public override void Write(Utf8JsonWriter writer, Ulid value, JsonSerializerOptions options)
         {
             writer.WriteStringValue(value.ToString());

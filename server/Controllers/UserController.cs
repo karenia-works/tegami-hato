@@ -28,13 +28,16 @@ namespace Karenia.TegamiHato.Server.Controllers
         {
             // Whether the code is sent should not be exposed to user.
             var code = UserLoginCode.Generate(DateTimeOffset.Now);
-            var result = await db.GenerateLoginCode(email, code);
+            var result = await db.GenerateLoginCodeOrAddUser(email, code);
 
-            // TODO: Send login code to email!
-            if (result) this.logger.LogInformation($"Added login code '{code.Code}' for {email}");
-            else this.logger.LogInformation($"Failed to validate {email} in login code");
+            this.logger.LogInformation($"Added login code '{code.Code}' for {email}");
+            if (result.Item1) this.logger.LogInformation($"Added user");
 
-            return NoContent();
+            return Ok(new
+            {
+                UserId = result.Item2,
+                NewUser = result.Item1
+            });
         }
     }
 }
