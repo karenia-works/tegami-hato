@@ -1,11 +1,10 @@
 @import 'styles/fonts';
 @import 'styles/container';
 @import 'styles/colors';
-// @import 'https://cdn.materialdesignicons.com/4.8.95/css/materialdesignicons.min.css'
 
 @lost gutter 24px; // ..
 @lost flexbox flex; // ..
-default-font = 'Sarasa UI SC', 'Noto Sans', 'San Fransisco', 'Segoe UI', 'Noto Sans CJK SC', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft Yahei UI', sans-serif;
+default-font = 'Source Han Sans CN', 'Sarasa UI SC', 'Noto Sans', 'San Fransisco', 'Segoe UI', 'Noto Sans CJK SC', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft Yahei UI', sans-serif;
 
 html {
   min-height: 100vh;
@@ -40,6 +39,7 @@ generate-padding(pad-base) {
   // Container
   --theme-container-pad: pad-base * 3;
   --theme-textbox-pad: pad-base * 1.5;
+  --theme-btn-pad: pad-base - 2;
 }
 
 // size-base: 12px
@@ -64,6 +64,7 @@ generate-font-size(size-base) {
   generate-font-size: 12px;
 
   --theme-textbox-size: 14px;
+  --theme-button-size: 14px;
   // pages
   --theme-page-lg: theme-page-lg;
   --theme-page-md: theme-page-md;
@@ -101,42 +102,6 @@ generate-font-size(size-base) {
   --textbox-error-color: var(--palette-err);
 }
 
-.inverted-color-theme {
-  /* Black */
-  --theme-base00: var(--palette-base07);
-  /* Gray 1 */
-  --theme-base01: var(--palette-base06);
-  /* Gray 2 */
-  --theme-base02: var(--palette-base05);
-  /* Gray 3 */
-  --theme-base03: var(--palette-base04);
-  /* Gray 4 */
-  --theme-base04: var(--palette-base03);
-  /* Gray 5 */
-  --theme-base05: var(--palette-base02);
-  /* Gray 6 */
-  --theme-base06: var(--palette-base01);
-  /* White */
-  --theme-base07: var(--palette-base00);
-  /* Red */
-  --theme-err: var(--palette-err);
-  /* Orange */
-  --theme-warn: var(--palette-warn);
-  /* Green 2 */
-  --theme-accent: var(--palette-accent-alter);
-  /* Green 3 */
-  --theme-accent-alter: var(--palette-accent);
-  --theme-accept: var(--palette-accept);
-  /* Blue 2 */
-  --theme-info: var(--palette-info);
-  // ===== Buttons =====
-  --btn-border-color: var(--theme-accent);
-  --btn-background-color: var(--theme-base05);
-  --btn-highlight-color: var(--theme-accent);
-  --btn-highlight-text-color: var(--theme-base00);
-  --btn-text-color: var(--theme-accent);
-}
-
 p, div, h1, h2, h3, h4, h5, h6, input, textarea, label {
   font-family: var(--theme-font);
   font-size: var(--theme-size-base);
@@ -167,27 +132,18 @@ h4 {
   font-weight: 500;
 }
 
-.info {
-  font-weight: bold;
-  color: var(--theme-info-color);
-}
 
-.jumbotron {
-  font-size: var(--theme-size-jumbotron);
-  font-weight: 300;
-}
+// .link {
+//   color: var(--theme-text-link-color);
+//   font-style: inherit;
+//   font-weight: inherit;
+//   text-decoration: inherit;
+//   transition: all 150ms ease-in-out;
 
-.link {
-  color: var(--theme-text-link-color);
-  font-style: inherit;
-  font-weight: inherit;
-  text-decoration: inherit;
-  transition: all 150ms ease-in-out;
-
-  &:hover {
-    color: var(--theme-alter);
-  }
-}
+//   &:hover {
+//     color: var(--theme-alter);
+//   }
+// }
 
 // .btn-ghost {
 //   display: flex;
@@ -207,18 +163,21 @@ btn-default-highlight-text-color = var(--theme-base07);
 
 button {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: var(--theme-pad-02) var(--theme-pad-03);
+  align-content: center;
+  justify-content: center;
+  padding: var(--theme-btn-pad) var(--theme-pad-03);
   font-family: inherit;
-  font-weight: boldv;
-  font-size: var(--theme-size-base);
+  font-weight: bold;
+  font-size: var(--theme-button-size);
+  line-height: 24px;
+  line-height: 24px;
   transition: all 150ms ease-in-out;
   user-select: none;
   outline: none;
   border-width: 2px;
   border-style: solid;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 .btn {
@@ -229,7 +188,7 @@ button {
   &:hover {
     background-color: var(--btn-highlight-color, btn-default-highlight-color);
     border-color: var(--btn-highlight-color, btn-default-highlight-color);
-    box-shadow: 0px var(--theme-pad-01, 5px) var(--theme-pad-03, 15px) 0px rgba(0,0,0,0.2);
+    box-shadow: 0 var(--theme-pad-01, 5px) var(--theme-pad-03, 15px) 0 rgba(0,0,0,0.2);
   }
 
   &:disabled {
@@ -240,8 +199,7 @@ button {
   &:active {
     background-color: var(--btn-bg-color, btn-default-bg-color);
     border-color: var(--btn-bg-color, btn-default-bg-color);
-    box-shadow: 0px 0px 15px 0px rgba(0,0,0,0);
-
+    box-shadow: 0 0 0 0 rgba(0,0,0,0);
   }
 }
 
@@ -251,8 +209,15 @@ button {
   border-color: var(--btn-accent-color);
 
   &:hover {
-    background-color: var(--btn-accent-color, btn-default-highlight-color);
-    color: var(--btn-text-color, btn-default-text-color);
+    color: #EC78FF;
+    border-color: #EC78FF;
+    box-shadow: 0 var(--theme-pad-01, 5px) var(--theme-pad-03, 15px) 0 rgba(0,0,0,0.1);
+  }
+
+  &:active {
+    color: var(--btn-accent-color, btn-default-text-color);
+    border-color: var(--btn-accent-color);
+    box-shadow: 0 0 0 0 rgba(0,0,0,0);
   }
 }
 
@@ -263,6 +228,7 @@ textbox-default-border-color = var(--theme-base05);
 textbox-default-accent-color = var(--theme-accent);
 
 .textbox {
+  height: 28px;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -277,7 +243,7 @@ textbox-default-accent-color = var(--theme-accent);
   font-family: inherit;
   font-weight: normal;
   font-size: var(--theme-textbox-size);
-  transition: border-color 150ms ease-in-out;
+  transition: all 150ms ease-in-out;
 
   &::placeholder {
     color: var(--textbox-placeholder-color, textbox-default-placeholder-color);

@@ -14,6 +14,8 @@
     }
 
     .info {
+        font-weight: bold;
+        color: var(--theme-info-color);
         margin-top: var(--theme-pad-01);  
         margin-bottom: var(--theme-pad-04);  
     }
@@ -21,7 +23,6 @@
 
 app-searchbar {
     width: 50vw;
-    min-width: 205px;
     max-width: 450px;
 }
 
@@ -30,7 +31,10 @@ app-searchbar {
     position: absolute;
     bottom: 0px;
     right: 0px;
-
-    .backgroundpic {
-    }
+    width: 70vw;
+    height: 60vh;
+    background-image: url("../../assets/background.svg")
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: right bottom ;
 }

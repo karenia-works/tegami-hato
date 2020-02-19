@@ -1,10 +1,9 @@
-
 .nav {
   display: flex
   justify-content: space-between
   color: var(--theme-background-color)
   user-select: none
-  z-index: 500
+  z-index: 500;
 }
 
 &.home {
@@ -29,6 +28,14 @@
 
   &.home {
     font-weight: 600;
+  }
+
+  &&:first-child {
+    margin-left: -24px
+  }
+
+  &&:last-child {
+    margin-right: -24px
   }
 
   &:hover {
