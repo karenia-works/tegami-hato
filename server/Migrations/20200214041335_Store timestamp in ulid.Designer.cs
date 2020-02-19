@@ -213,7 +213,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .HasForeignKey("_HatoMessageMsgId")
                         .HasConstraintName("fk_attachments_messages_hato_message_temp_id")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        ;
                 });
 
             modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoMessage", b =>

@@ -36,6 +36,7 @@ namespace Karenia.TegamiHato.Server.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(@"drop trigger if exists message_search_vector_update on messages");
             migrationBuilder.DropIndex(
                 name: "IX_messages_MsgId",
                 table: "messages");
@@ -48,7 +49,6 @@ namespace Karenia.TegamiHato.Server.Migrations
                 name: "tsvector",
                 table: "messages");
 
-            migrationBuilder.Sql(@"drop trigger message_search_vector_update");
         }
     }
 }
