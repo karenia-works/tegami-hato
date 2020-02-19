@@ -10,6 +10,7 @@ export class GroupPageComponent implements OnInit {
   groupName;
   followNum;
   showThis;
+  showNew;
   NoticeList = NoticeList;
   listLength = NoticeList.length;
   constructor() {}
@@ -18,6 +19,7 @@ export class GroupPageComponent implements OnInit {
     this.groupName = "Beihang";
     this.followNum = 125;
     this.showThis = -1;
+    this.showNew = false;
   }
 
   clickToOpen(index) {
@@ -32,5 +34,9 @@ export class GroupPageComponent implements OnInit {
       this.showThis = index;
       return;
     }
+  }
+
+  clickNew(){
+    this.showNew = true;
   }
 }

@@ -10,9 +10,14 @@
   <button class="btn">保存</button>
 
   <h3>分享链接</h3>
-
   <div *ngFor="let linkInfo of linkList; let i = index" class="line">
     {{linkInfo.link}}
     有效期至{{linkInfo.deadTime}}
+  </div>
+
+  <h3>成员管理</h3>
+  <div *ngFor="let userInfo of userList; let i = index" class="line">
+    {{userInfo.name}}
+    {{userInfo.email}}
   </div>
 </div>
