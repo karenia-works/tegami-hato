@@ -1,11 +1,18 @@
 <div class="container">
-  <h1>我关注的</h1>
+  <h1>频道</h1>
+  <div class="opr">
+    <app-searchbar [placeholder]="'搜索频道或内容'"></app-searchbar>
+    <button class="btn-light">创建新频道</button>
+  </div>
   <div class="list">
-    <div *ngFor="let follow of followList" class="line">
-      <button class="btn item_btn name" routerLink="/g">
-        {{ follow.name }}
-      </button>
-      <button class="btn item_btn op">删除</button>
+    <div *ngFor="let chl of channels" 
+          class="channel"
+          [routerLink]="['/channel', chl.channelId]">
+      <div class="channel-info">
+        <span class="title">{{chl.channelTitle}}</span>
+        <span class="time">{{getTime(chl.msgId)}}</span>
+      </div>
+      <span class="message">{{chl.bodyPlain}}</span>
     </div>
   </div>
 </div>
