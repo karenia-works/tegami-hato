@@ -1,15 +1,46 @@
 <div class="container">
   <h1>#{{ groupName }}</h1>
-  关注人数:{{ followNum }}
+  <h4>关注人数:{{ followNum }}</h4>
 
   <div class="searchAndFollow">
     <div class="bar">
       <app-searchbar></app-searchbar>
     </div>
     <div class="btn_d">
-      <button class="btn2 btn">关注</button>
+      <button class="btn2 btn btn-light btn-follow">关注</button>
     </div>
   </div>
-  <button class="new_btn btn">新邮件</button>
-  <button class="item_btn btn">第九届创新杯</button>
+  <button class="btn-light btn btn-wide btn-new">
+    <mat-icon svgIcon="plus" class="icon"></mat-icon>新邮件
+  </button>
+  <div class="info">
+    <div *ngFor="let notice of NoticeList; let i = index" class="line">
+      <div *ngIf="showThis != i; then notOpen; else Open"></div>
+      <ng-template #notOpen>
+        <button class="btn-light btn btn-wide" (click)="clickToOpen(i)">
+          {{ notice.title }}
+        </button>
+      </ng-template>
+      <ng-template #Open>
+        <button class="btn-light btn btn-wide btn-read" (click)="clickToOpen(i)">
+          <div class="inside">
+            <div class="title">
+              {{ notice.title }}
+            </div>
+            <div class="sub">
+              <div class="from">
+                {{ notice.from }}
+              </div>
+              <div class="time">
+                {{ notice.time }}
+              </div>
+            </div>
+            <div class="content">
+              {{ notice.content }}
+            </div>
+          </div>
+        </button>
+      </ng-template>
+    </div>
+  </div>
 </div>

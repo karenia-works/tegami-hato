@@ -24,16 +24,21 @@ const routes: Routes = [
     component: FollowPageComponent
   },
   {
-    path: "channel/:channelId",
-    component: GroupPageComponent
+    path: "channel",
+    children: [
+      {
+        path: ":channelId",
+        component: GroupPageComponent
+      },
+      {
+        path: "setting",
+        component: SettingPageComponent
+      }
+    ]
   },
   {
     path: "login",
     component: LoginPageComponent
-  },
-  {
-    path: "channel/:channelId/setting",
-    component: SettingPageComponent
   },
   {
     path: "me",
