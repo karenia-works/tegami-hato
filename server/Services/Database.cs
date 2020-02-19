@@ -45,17 +45,32 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="channelName"></param>
         /// <param name="channelTitle"></param>
         /// <returns>Channel ID</returns>
-        public async Task<HatoChannel> NewMailingChannel(string? channelName, bool isPublic, string channelTitle)
+        public async Task<HatoChannel> NewMailingChannel(
+            string? channelName,
+            bool isPublic,
+            string channelTitle,
+            Ulid creatorId)
         {
             var channelId = Ulid.NewUlid();
             var channel = new HatoChannel()
             {
                 ChannelId = channelId,
-                ChannelUsername = channelName,
+                ChannelUsername = channelName ?? channelId.ToString(),
                 ChannelTitle = channelTitle,
                 IsPublic = isPublic
             };
             var result = await db.Channels.AddAsync(channel);
+
+            db.ChannelUserTable.Add(new ChannelUserRelation()
+            {
+                UserId = creatorId,
+                ChannelId = channelId,
+                IsCreator = true,
+                Permission = UserPermission.FullControl
+            });
+            var adminRoleId = Ulid.NewUlid();
+            var regularRoleId = Ulid.NewUlid();
+
             await db.SaveChangesAsync();
             return channel;
         }
@@ -229,36 +244,7 @@ namespace Karenia.TegamiHato.Server.Services
 
             if (userAlreadyInChannel) return AddResult.AlreadyExist;
 
-            db.ChannelUserTable.Add(new ChannelUserRelation()
-            {
-                UserId = userId,
-                ChannelId = channelId,
-                IsCreator = true
-            });
-            var adminRoleId = Ulid.NewUlid();
-            var regularRoleId = Ulid.NewUlid();
-
-            db.Roles.Add(new ChannelRole()
-            {
-                RoleId = adminRoleId,
-                RoleName = "admin",
-                CanEditMessage = true,
-                CanEditRoles = true,
-                CanEditUsers = true,
-                CanReceiveMessage = true,
-                CanSendMessage = true,
-            });
-
-            db.Roles.Add(new ChannelRole()
-            {
-                RoleId = adminRoleId,
-                RoleName = "subscriber",
-                CanEditMessage = true,
-                CanEditRoles = true,
-                CanEditUsers = true,
-                CanReceiveMessage = true,
-                CanSendMessage = true,
-            });
+            // TODO: Add user and default role
 
             await db.SaveChangesAsync();
             return AddResult.Success;
@@ -289,7 +275,7 @@ namespace Karenia.TegamiHato.Server.Services
                 .AsQueryable()
                 .Where(entry =>
                     entry.ChannelId == channelId
-                    && entry._Roles.Any(role => role._Role.CanReceiveMessage))
+                    && ((entry.Permission & UserPermission.Receive) != 0))
                 .IncludeOptimized(entry => entry._User)
                 .Select(entry => entry._User)
                 .AsAsyncEnumerable();
@@ -305,7 +291,7 @@ namespace Karenia.TegamiHato.Server.Services
                 .AsQueryable()
                 .Where(entry =>
                    channelIds.Contains(entry.ChannelId)
-                    && entry._Roles.Any(role => role._Role.CanReceiveMessage))
+                    && ((entry.Permission & UserPermission.Receive) != 0))
                 .GroupBy(entry => entry._Channel.ChannelUsername, entry => entry._User.Email)
                 .ToListAsync();
 
@@ -362,7 +348,7 @@ namespace Karenia.TegamiHato.Server.Services
                     entry =>
                         entry.UserId == userId
                         && entry.ChannelId == channelId
-                        && entry._Roles.Any(role => role._Role.CanEditMessage)
+                        && ((entry.Permission & UserPermission.Edit) != 0)
                 );
         }
 
@@ -374,20 +360,17 @@ namespace Karenia.TegamiHato.Server.Services
                     entry =>
                         entry.UserId == userId
                         && entry.ChannelId == channelId
-                        && entry._Roles.Any(role => role._Role.CanSendMessage)
+                        && ((entry.Permission & UserPermission.Send) != 0)
                 );
         }
 
-        public async Task<ChannelRole> GetUserPermission(Ulid userId, Ulid channelId)
+        public async Task<UserPermission> GetUserPermission(Ulid userId, Ulid channelId)
         {
-            var list = await db.ChannelUserTable.AsQueryable().Where(
-                   entry =>
-                       entry.UserId == userId
-                       && entry.ChannelId == channelId
-               ).SelectMany(
-                   entry => entry._Roles.Select(entry => entry._Role)
-               ).ToListAsync();
-            return list.Aggregate(ChannelRole.FoldRole);
+            return await db.ChannelUserTable.AsQueryable().Where(
+                    entry =>
+                        entry.UserId == userId
+                        && entry.ChannelId == channelId
+               ).Select(entry => entry.Permission).SingleOrDefaultAsync();
         }
 
         public async Task<bool> CanUserSendInChannel(string userEmail, Ulid channelId)

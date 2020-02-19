@@ -16,10 +16,10 @@ namespace Karenia.TegamiHato.Server.Controllers
     {
         public ChannelController(DatabaseService _db)
         {
-            this._db = _db;
+            this.db = _db;
         }
 
-        private DatabaseService _db;
+        private DatabaseService db;
 
         public class AddChannelRequest
         {
@@ -29,21 +29,31 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpPost]
+        [Authorize("api")]
         public async Task<IActionResult> AddChannel(
             [FromBody] AddChannelRequest req)
         {
-            if (req.channelName != null && await _db.ChannelNameExists(req.channelName))
+            Ulid userId;
+            {
+                var id = HttpContext.User.Claims.Where(claim => claim.Type == "sub")
+                    .Select(claim => claim.Value)
+                    .Single();
+
+                if (Ulid.TryParse(id, out var res)) userId = res;
+                else return BadRequest(new ErrorResult(
+                        "Bad userId", "Malformed bearer token. Please authorize again!"));
+            }
+
+            if (req.channelName != null && await db.ChannelNameExists(req.channelName))
             {
                 return BadRequest(
                     new ErrorResult(
                         "Channel already exists", "The name of this channel is already taken"));
             }
-            else
-            {
-                return Ok(
-                    await this._db.NewMailingChannel(
-                        req.channelName, req.isPublic, req.channelTitle));
-            }
+
+            return Ok(
+                await this.db.NewMailingChannel(
+                    req.channelName, req.isPublic, req.channelTitle, userId));
         }
 
         [HttpGet]
@@ -65,7 +75,7 @@ namespace Karenia.TegamiHato.Server.Controllers
 
             try
             {
-                return Ok(this._db.GetRecentChannels(_id, count, skip));
+                return Ok(this.db.GetRecentChannels(_id, count, skip));
             }
             catch (ArgumentOutOfRangeException e)
             {

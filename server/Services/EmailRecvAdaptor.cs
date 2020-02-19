@@ -217,8 +217,6 @@ namespace Karenia.TegamiHato.Server.Services
             }
         }
 
-
-
         public async Task<Stream> GetAttachment(string url)
         {
             if (!url.StartsWith("http://") && !url.StartsWith("https://"))

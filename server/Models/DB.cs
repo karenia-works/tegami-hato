@@ -14,9 +14,20 @@ namespace Karenia.TegamiHato.Server.Models
     // Disable initialization warning because we don't need that for now
 #pragma warning disable CS8618
 #pragma warning disable IDE1006
+    [Flags]
+    public enum UserPermission : uint
+    {
+        None = 0,
+        Receive = 0x01,
+        Send = 0x02,
+        Edit = 0x04,
+        UserManage = 0x08,
+        EditInfo = 0x10,
+        FullControl = 0xffffffff,
+    }
+
     public class HatoAttachment
     {
-
         public Ulid AttachmentId { get; set; }
         public string Filename { get; set; }
         public string Url { get; set; }
@@ -112,8 +123,14 @@ namespace Karenia.TegamiHato.Server.Models
         public virtual ICollection<ChannelUserRelation> _Users { get; set; }
         [JsonIgnore]
         public virtual ICollection<HatoMessage> _Messages { get; set; }
-        [JsonIgnore]
-        public virtual ICollection<ChannelRole> _Roles { get; set; }
+
+        // [JsonIgnore]
+        // public virtual ICollection<ChannelRole> _Roles { get; set; }
+        // [JsonIgnore]
+        public virtual ICollection<InvitationLink> _InvitationLinks { get; set; }
+
+        public UserPermission DefaultPermission { get; set; }
+            = UserPermission.Receive;
     }
 
     public class ChannelUserRelation
@@ -127,51 +144,11 @@ namespace Karenia.TegamiHato.Server.Models
         public bool ShouldReceiveMessage { get; set; }
         public bool IsCreator { get; set; }
 
-        [JsonIgnore]
-        public virtual ICollection<UserRoleRelation>? _Roles { get; set; } = null;
-
-    }
-
-    public class ChannelRole
-    {
-        public Ulid RoleId { get; set; }
-        public Ulid ChannelId { get; set; }
-
-        public string RoleName { get; set; }
-
-        public bool CanSendMessage { get; set; }
-        public bool CanReceiveMessage { get; set; }
-        public bool CanEditMessage { get; set; }
-        public bool CanEditUsers { get; set; }
-        public bool CanEditRoles { get; set; }
-
-        [JsonIgnore]
-        public virtual ICollection<UserRoleRelation>? _Users { get; set; }
-
-        public static ChannelRole FoldRole(ChannelRole baseRole, ChannelRole r)
-        {
-            // baseRole.RoleName = $"{baseRole.RoleName} + {r.RoleName}";
-            baseRole.CanSendMessage |= r.CanSendMessage;
-            baseRole.CanReceiveMessage |= r.CanReceiveMessage;
-            baseRole.CanEditMessage |= r.CanEditMessage;
-            baseRole.CanEditUsers |= r.CanEditUsers;
-            baseRole.CanEditRoles |= r.CanEditRoles;
-            return baseRole;
-        }
-    }
-
-    public class UserRoleRelation
-    {
-        public Ulid SubscriptionId { get; set; }
-        public virtual ChannelUserRelation _Subscription { get; set; }
-
-        public Ulid RoleId { get; set; }
-        public virtual ChannelRole _Role { get; set; }
+        public UserPermission Permission { get; set; }
     }
 
     public class User
     {
-
         public Ulid UserId { get; set; }
 
         public string? Nickname { get; set; }
@@ -179,7 +156,6 @@ namespace Karenia.TegamiHato.Server.Models
         public string Email { get; set; }
 
         public virtual ICollection<ChannelUserRelation> _Channels { get; set; }
-
 
         [JsonIgnore]
         public virtual ICollection<UserLoginCode>? _LoginCodes { get; set; } = null;
@@ -221,6 +197,19 @@ namespace Karenia.TegamiHato.Server.Models
         }
     }
 
+    public class InvitationLink
+    {
+        public Ulid ChannelId { get; set; }
+
+        public string LinkId { get; set; }
+
+        public UserPermission DefaultPermission { get; set; }
+            = UserPermission.Receive;
+
+        public DateTimeOffset Expires { get; set; }
+            = new DateTimeOffset(long.MaxValue, TimeSpan.Zero);
+    }
+
     // Disable initialization warning because we don't need that for now
 
     public class EmailSystemContext : DbContext
@@ -232,8 +221,7 @@ namespace Karenia.TegamiHato.Server.Models
         public DbSet<ChannelUserRelation> ChannelUserTable { get; set; }
         public DbSet<HatoAttachment> Attachments { get; set; }
         public DbSet<AttachmentMessageRelation> AttachmentRelations { get; set; }
-        public DbSet<ChannelRole> Roles { get; set; }
-        public DbSet<UserRoleRelation> UserRoleRelations { get; set; }
+        public DbSet<InvitationLink> InvitationLinks { get; set; }
 
 
         // ========= Views =========
@@ -258,13 +246,10 @@ namespace Karenia.TegamiHato.Server.Models
             ConfigureAttachment(modelBuilder);
             ConfigureChannelUserRelation(modelBuilder);
             ConfigureAttachmentMessageRelation(modelBuilder);
-            ConfigureUserRoleRelation(modelBuilder);
-            ConfigureRoles(modelBuilder);
             ConfigureRecentMessageView(modelBuilder);
-
+            ConfigureInvitationLinks(modelBuilder);
             modelBuilder.ToSnakeCase();
         }
-
 
         private void ConfigureRecentMessageView(ModelBuilder modelBuilder)
         {
@@ -275,26 +260,13 @@ namespace Karenia.TegamiHato.Server.Models
             modelBuilder.Entity<RecentMessageViewItem>().HasIndex(x => x.MsgId);
         }
 
-        private void ConfigureRoles(ModelBuilder modelBuilder)
+        private void ConfigureInvitationLinks(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ChannelRole>().HasKey(x => x.RoleId);
-            modelBuilder.Entity<ChannelRole>().HasOne<HatoChannel>().WithMany(ch => ch._Roles).HasForeignKey(x => x.ChannelId);
-            modelBuilder.Entity<ChannelRole>().HasIndex(x => x.RoleId);
-            modelBuilder.Entity<ChannelRole>().Property(x => x.RoleId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<ChannelRole>().HasIndex(x => x.ChannelId);
-            modelBuilder.Entity<ChannelRole>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
-        }
-
-        private void ConfigureUserRoleRelation(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<UserRoleRelation>().HasKey(x => new { x.SubscriptionId, x.RoleId });
-            modelBuilder.Entity<UserRoleRelation>().HasIndex(x => new { x.SubscriptionId, x.RoleId });
-            modelBuilder.Entity<UserRoleRelation>().HasIndex(x => x.SubscriptionId);
-            modelBuilder.Entity<UserRoleRelation>().HasIndex(x => x.RoleId);
-            modelBuilder.Entity<UserRoleRelation>().HasOne(x => x._Subscription).WithMany(u => u._Roles).HasForeignKey(u => u.SubscriptionId);
-            modelBuilder.Entity<UserRoleRelation>().HasOne(x => x._Role).WithMany(u => u._Users).HasForeignKey(u => u.RoleId);
-            modelBuilder.Entity<UserRoleRelation>().Property(x => x.SubscriptionId).HasConversion(UlidGuidConverter);
-            modelBuilder.Entity<UserRoleRelation>().Property(x => x.RoleId).HasConversion(UlidGuidConverter);
+            modelBuilder.Entity<InvitationLink>().HasKey(x => x.LinkId);
+            modelBuilder.Entity<InvitationLink>().HasIndex(x => x.LinkId);
+            modelBuilder.Entity<InvitationLink>().HasOne<HatoChannel>().WithMany(x => x._InvitationLinks).HasForeignKey(x => x.ChannelId);
+            modelBuilder.Entity<InvitationLink>().HasIndex(x => x.ChannelId);
+            modelBuilder.Entity<InvitationLink>().Property(x => x.ChannelId).HasConversion(UlidGuidConverter);
         }
 
         private void ConfigureAttachmentMessageRelation(ModelBuilder modelBuilder)
