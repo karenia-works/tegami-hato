@@ -37,8 +37,10 @@ namespace Karenia.TegamiHato.Server.Services
 
         public async Task<SendResponse> SendEmail(EmailData data)
         {
-            var email = new Email();
-            email.Data = data;
+            var email = new Email
+            {
+                Data = data
+            };
             return await sender.SendAsync(email);
         }
 
@@ -151,6 +153,7 @@ namespace Karenia.TegamiHato.Server.Services
 
         private async void getEmail(string url)
         {
+
             var result = await client.GetAsync(url);
             if (!result.IsSuccessStatusCode)
             {
@@ -176,6 +179,8 @@ namespace Karenia.TegamiHato.Server.Services
 
         public async Task<Stream> GetAttachment(string url)
         {
+            if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+                url = "http://" + url;
             var req = await client.GetAsync(url);
             if (!req.IsSuccessStatusCode) { throw new AttachmentNotFoundException(); }
             return await req.Content.ReadAsStreamAsync();
@@ -184,6 +189,7 @@ namespace Karenia.TegamiHato.Server.Services
         public class AttachmentNotFoundException : ChannelSendFailedException
         {
         }
+
 
     }
 

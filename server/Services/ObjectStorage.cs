@@ -4,7 +4,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Minio;
-using NUlid;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -54,7 +53,13 @@ namespace Karenia.TegamiHato.Server.Services
                 {
                     ["x-amz-acl"] = "public-read"
                 });
-            return $"{spaceName}.{baseDomain}/{key}";
+            var uri = new UriBuilder
+            {
+                Scheme = "https",
+                Host = $"{spaceName}.{baseDomain}",
+                Path = key
+            };
+            return uri.ToString();
         }
     }
 }

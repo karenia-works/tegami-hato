@@ -1,15 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using Karenia.TegamiHato.Server.Models;
 using Karenia.TegamiHato.Server.Services;
 using System.Threading.Tasks;
-using NUlid;
 using System;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
-using IdentityServer4;
-using System.Linq;
-using System.IO;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -20,11 +14,16 @@ namespace Karenia.TegamiHato.Server.Controllers
     {
         private readonly ObjectStorageService oss;
         private readonly DatabaseService db;
+        private readonly EmailSendingService send;
 
-        public AttachmentController(ObjectStorageService oss, DatabaseService db)
+        public AttachmentController(
+            ObjectStorageService oss,
+            DatabaseService db,
+            EmailSendingService send)
         {
             this.oss = oss;
             this.db = db;
+            this.send = send;
         }
 
         [HttpPost]
@@ -42,11 +41,19 @@ namespace Karenia.TegamiHato.Server.Controllers
             }
             Ulid id = Ulid.NewUlid();
             var path = await this.oss.PutAttachment(id, filename, fileStream, contentLength, contentType);
-            return Created(path, new
+
+            var att = new HatoAttachment()
             {
-                path,
-                size = contentLength,
-            });
+                AttachmentId = id,
+                Filename = filename,
+                Url = path,
+                ContentType = contentType,
+                Size = contentLength,
+                IsAvailable = true
+            };
+            await this.db.AddAttachmentEntry(att);
+
+            return Created(path, att);
         }
     }
 }
