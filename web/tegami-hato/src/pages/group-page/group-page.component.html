@@ -10,9 +10,49 @@
       <button class="btn2 btn btn-light btn-follow">关注</button>
     </div>
   </div>
-  <button class="btn-light btn btn-wide btn-new">
-    <mat-icon svgIcon="plus" class="icon"></mat-icon>新邮件
-  </button>
+  <div *ngIf="!showNew; then notNew; else New"></div>
+  <ng-template #notNew>
+    <button class="btn-light btn btn-wide btn-new" (click)="clickNew()">
+      <mat-icon svgIcon="plus" class="icon"></mat-icon>新邮件
+    </button>
+  </ng-template>
+  <ng-template #New>
+    <button class="btn-light btn btn-wide btn-new-open" disabled="disabled">
+      <div class="input">
+        <input
+          name="search_box"
+          id="search_box"
+          type="text"
+          class=" textbox search-box title-box"
+          placeholder="为消息添加标题"
+        />
+        <textarea
+          name="search_box"
+          id="search_box"
+          type="text"
+          class="search-box textbox content-box"
+          placeholder="输入邮件内容"
+        ></textarea>
+        <div class="func_part">
+          <div class="a_area">
+            <a href="" class="a">支持使用Markdown语法</a>
+            <div class="label">|</div>
+            <a href="" class="a reala">帮助</a>
+            <div class="label">|</div>
+            <a href="" class="a reala">高级编辑器</a>
+          </div>
+          <div class="btn_area">
+            <button class="add_doc">
+              <mat-icon svgIcon="attachment" class="icon"></mat-icon>添加附件
+            </button>
+            <button class="send">
+              <mat-icon svgIcon="send" class="icon"></mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </button>
+  </ng-template>
   <div class="info">
     <div *ngFor="let notice of NoticeList; let i = index" class="line">
       <div *ngIf="showThis != i; then notOpen; else Open"></div>
@@ -22,7 +62,10 @@
         </button>
       </ng-template>
       <ng-template #Open>
-        <button class="btn-light btn btn-wide btn-read" (click)="clickToOpen(i)">
+        <button
+          class="btn-light btn btn-wide btn-read"
+          (click)="clickToOpen(i)"
+        >
           <div class="inside">
             <div class="title">
               {{ notice.title }}
