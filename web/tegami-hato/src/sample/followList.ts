@@ -36,3 +36,33 @@ export const NoticeList = [
     content: "你输入的 true和false是字符串，angular判定字符串不为空就对的，user.virtual = true，所以不会消失。你后台个给user.virtual初始化数据了？"
   }
 ];
+
+export const userList = [
+  {
+    name: "Rynco Maekawa",
+    email:"i@rynco.me"
+  },
+  {
+    name: "Slyvia Wang",
+    email:"skuld@karenia.cc"
+  },
+  {
+    name: "Maksim Xing",
+    email:"maksimx@gmail.com"
+  }
+];
+
+export const linkList = [
+  {
+    link: "hato/AXBYUom4Nf2GDcMyaH3ppw",
+    deadTime: "2028-10-09 00:00"
+  },
+  {
+    link: "hato/UIFWuifwud(dfwiufeww",
+    deadTime: "2048-11-12 00:00"
+  },
+  {
+    link: "hato/98d*D(W9fw89daw8d9",
+    deadTime: "2028-12-13 00:00"
+  }
+];

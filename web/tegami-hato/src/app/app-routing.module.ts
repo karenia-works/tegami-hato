@@ -6,6 +6,8 @@ import { GroupPageComponent } from "src/pages/group-page/group-page.component";
 import { GroupPageModule } from "src/pages/group-page/group-page.module";
 import { FollowPageComponent } from "src/pages/follow-page/follow-page.component";
 import { FollowPageModule } from "src/pages/follow-page/follow-page.module";
+import { ManagePageComponent } from "src/pages/manage-page/manage-page.component";
+import { ManagePageModule } from "src/pages/manage-page/manage-page.module";
 
 const routes: Routes = [
   {
@@ -14,7 +16,16 @@ const routes: Routes = [
   },
   {
     path: "g",
-    component: GroupPageComponent
+    children: [
+      {
+        path: "",
+        component: GroupPageComponent
+      },
+      {
+        path: "manage",
+        component: ManagePageComponent
+      }
+    ]
   },
   {
     path: "follow",
@@ -27,7 +38,8 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     MainPageModule,
     GroupPageModule,
-    FollowPageModule
+    FollowPageModule,
+    ManagePageModule
   ],
   exports: [RouterModule]
 })

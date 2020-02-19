@@ -1,0 +1,18 @@
+<div class="container">
+  <h4>@{{ groupUserName }}</h4>
+  <h1>频道设置</h1>
+  频道名称
+  <input [placeholder]="groupName" />
+  频道用户名
+  <input [placeholder]="groupUserName" />
+  <input type="checkbox" />
+  {{ isPublic }}公开频道
+  <button class="btn">保存</button>
+
+  <h3>分享链接</h3>
+
+  <div *ngFor="let linkInfo of linkList; let i = index" class="line">
+    {{linkInfo.link}}
+    有效期至{{linkInfo.deadTime}}
+  </div>
+</div>
