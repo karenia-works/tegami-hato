@@ -151,7 +151,7 @@ namespace Karenia.TegamiHato.Server.Controllers
 
         public class SendMessageResult
         {
-            [JsonConverter(typeof(UlidJsonConverter))]
+
             public Ulid MsgId { get; set; }
             public DateTimeOffset timestamp { get; set; }
             public List<(string, string)> FailedChannels { get; set; }
@@ -206,7 +206,6 @@ namespace Karenia.TegamiHato.Server.Controllers
             this._db.db.AttachmentRelations.AddRange(attachments.Select(att => new AttachmentMessageRelation()
             {
                 AttachmentId = att.AttachmentId,
-                RelId = Ulid.NewUlid(),
                 MsgId = msgId
             }));
             await this._db.db.SaveChangesAsync();

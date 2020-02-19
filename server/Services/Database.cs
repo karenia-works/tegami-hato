@@ -62,19 +62,22 @@ namespace Karenia.TegamiHato.Server.Services
 
         public async Task<Ulid?> GetUserIdFromEmail(string email)
         {
-            return await db.Users.Where(u => u.Email == email)
+            return await db.Users.AsQueryable()
+                .Where(u => u.Email == email)
                 .Select(u => u.UserId)
                 .SingleOrDefaultAsync();
         }
 
         public async Task<User?> GetUserFromEmail(string email)
         {
-            return await db.Users.SingleOrDefaultAsync(u => u.Email == email);
+            return await db.Users.AsQueryable()
+                .SingleOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<HatoChannel?> GetChannelFromUsername(string name)
         {
-            return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
+            return await db.Channels.AsQueryable()
+                .SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
         }
 
         public async Task<HatoChannel?> GetChannelFromUsernameOrId(string name)
@@ -82,34 +85,39 @@ namespace Karenia.TegamiHato.Server.Services
             if (Ulid.TryParse(name, out var id))
                 return await db
                     .Channels
+                    .AsQueryable()
                     .SingleOrDefaultAsync(
                         ch => ch.ChannelId == id
                             || ch.ChannelUsername == name);
             else
-                return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
+                return await db.Channels.AsQueryable()
+                    .SingleOrDefaultAsync(ch => ch.ChannelUsername == name);
         }
 
         public async Task<bool> ChannelNameExists(string name)
         {
             if (Ulid.TryParse(name, out var id))
             {
-                return await db.Channels.AnyAsync(
+                return await db.Channels.AsQueryable().AnyAsync(
                     ch => ch.ChannelUsername == name || ch.ChannelId == id);
             }
             else
             {
-                return await db.Channels.AnyAsync(ch => ch.ChannelUsername == name);
+                return await db.Channels.AsQueryable()
+                    .AnyAsync(ch => ch.ChannelUsername == name);
             }
         }
 
         public async Task<User?> GetUser(Ulid userId)
         {
-            return await db.Users.SingleOrDefaultAsync(u => u.UserId == userId);
+            return await db.Users.AsQueryable()
+                .SingleOrDefaultAsync(u => u.UserId == userId);
         }
 
         public async Task<HatoChannel?> GetChannel(Ulid channelId)
         {
-            return await db.Channels.SingleOrDefaultAsync(ch => ch.ChannelId == channelId);
+            return await db.Channels.AsQueryable()
+                .SingleOrDefaultAsync(ch => ch.ChannelId == channelId);
         }
 
         /// <summary>
@@ -197,7 +205,9 @@ namespace Karenia.TegamiHato.Server.Services
 
             return db
                 .RecentMessages.Join(
-                    db.ChannelUserTable.Where(x => x.UserId == userId),
+                    db.ChannelUserTable
+                    .AsQueryable()
+                    .Where(x => x.UserId == userId),
                     msg => msg.ChannelId,
                     ch => ch.ChannelId,
                     (r, i) => r)
@@ -209,7 +219,9 @@ namespace Karenia.TegamiHato.Server.Services
         public async Task<AddResult> AddUserToChannel(Ulid userId, Ulid channelId)
         {
             var userAlreadyInChannel = await db
-                .ChannelUserTable.Where(
+                .ChannelUserTable
+                .AsQueryable()
+                .Where(
                     entry =>
                         entry.UserId == userId && entry.ChannelId == channelId
                 )
@@ -217,32 +229,55 @@ namespace Karenia.TegamiHato.Server.Services
 
             if (userAlreadyInChannel) return AddResult.AlreadyExist;
 
-            await db.ChannelUserTable.AddAsync(new ChannelUserRelation()
+            db.ChannelUserTable.Add(new ChannelUserRelation()
             {
                 UserId = userId,
                 ChannelId = channelId,
-
-                // TODO: Default permissions?
-                CanSendMessage = false,
-                CanReceiveMessage = true,
-                CanEditRoles = false
+                IsCreator = true
             });
+            var adminRoleId = Ulid.NewUlid();
+            var regularRoleId = Ulid.NewUlid();
+
+            db.Roles.Add(new ChannelRole()
+            {
+                RoleId = adminRoleId,
+                RoleName = "admin",
+                CanEditMessage = true,
+                CanEditRoles = true,
+                CanEditUsers = true,
+                CanReceiveMessage = true,
+                CanSendMessage = true,
+            });
+
+            db.Roles.Add(new ChannelRole()
+            {
+                RoleId = adminRoleId,
+                RoleName = "subscriber",
+                CanEditMessage = true,
+                CanEditRoles = true,
+                CanEditUsers = true,
+                CanReceiveMessage = true,
+                CanSendMessage = true,
+            });
+
             await db.SaveChangesAsync();
             return AddResult.Success;
         }
 
+        [Obsolete]
         public async Task<UpdateResult> EditUserPermissions(Ulid userId, Ulid channelId, ChannelUserRelation newPermissions)
         {
             var row = await db
                 .ChannelUserTable
+                .AsQueryable()
                 .SingleOrDefaultAsync(
                     (row) => row.UserId == userId && row.ChannelId == channelId);
 
             if (row == null) return UpdateResult.NotExist;
 
-            row.CanEditRoles = newPermissions.CanEditRoles;
-            row.CanReceiveMessage = newPermissions.CanReceiveMessage;
-            row.CanSendMessage = newPermissions.CanSendMessage;
+            // row.CanEditRoles = newPermissions.CanEditRoles;
+            // row.CanReceiveMessage = newPermissions.CanReceiveMessage;
+            // row.CanSendMessage = newPermissions.CanSendMessage;
             await db.SaveChangesAsync();
             return UpdateResult.Success;
         }
@@ -251,12 +286,30 @@ namespace Karenia.TegamiHato.Server.Services
         {
             var result = db
                 .ChannelUserTable
-                .Where(entry => entry.ChannelId == channelId && entry.CanReceiveMessage)
+                .AsQueryable()
+                .Where(entry =>
+                    entry.ChannelId == channelId
+                    && entry._Roles.Any(role => role._Role.CanReceiveMessage))
                 .IncludeOptimized(entry => entry._User)
                 .Select(entry => entry._User)
                 .AsAsyncEnumerable();
 
             return result;
+        }
+
+        public async Task<List<IGrouping<string, string>>> GetAllReceiverEmails(
+            ICollection<Ulid> channelIds)
+        {
+            var result = db
+                .ChannelUserTable
+                .AsQueryable()
+                .Where(entry =>
+                   channelIds.Contains(entry.ChannelId)
+                    && entry._Roles.Any(role => role._Role.CanReceiveMessage))
+                .GroupBy(entry => entry._Channel.ChannelUsername, entry => entry._User.Email)
+                .ToListAsync();
+
+            return await result;
         }
 
         /// <summary>
@@ -274,6 +327,7 @@ namespace Karenia.TegamiHato.Server.Services
         {
             var result = await db
                 .Messages
+                .AsQueryable()
                 .Where(message => message.MsgId == messageId && message.ChannelId == channelId)
                 .DeleteFromQueryAsync();
 
@@ -289,69 +343,99 @@ namespace Karenia.TegamiHato.Server.Services
 
         public async Task<ChannelUserRelation?> GetSubscriptionEntry(Ulid userId, Ulid channelId, bool orNull = true)
         {
-            var sub = await db.ChannelUserTable.SingleOrDefaultAsync(
-                entry => entry.UserId == userId && entry.ChannelId == channelId
-            );
+            var sub = await db.ChannelUserTable
+                .AsQueryable()
+                .SingleOrDefaultAsync(
+                    entry => entry.UserId == userId && entry.ChannelId == channelId
+                );
             if (sub == null && !orNull)
                 throw new ArgumentException($"User {userId} is not in channel {channelId}");
             else return sub;
         }
 
+
         public async Task<bool> CanUserDeleteInChannel(Ulid userId, Ulid channelId)
         {
-            var sub = await GetSubscriptionEntry(userId, channelId, orNull: true);
-            if (sub == null) return false;
-            // TODO: use a specific field for this purpose
-            else if (sub.CanEditRoles) return true;
-            else return false;
+            return await db.ChannelUserTable
+                .AsQueryable()
+                .AnyAsync(
+                    entry =>
+                        entry.UserId == userId
+                        && entry.ChannelId == channelId
+                        && entry._Roles.Any(role => role._Role.CanEditMessage)
+                );
         }
 
         public async Task<bool> CanUserSendInChannel(Ulid userId, Ulid channelId)
         {
-            var sub = await GetSubscriptionEntry(userId, channelId, orNull: true);
+            return await db.ChannelUserTable
+                .AsQueryable()
+                .AnyAsync(
+                    entry =>
+                        entry.UserId == userId
+                        && entry.ChannelId == channelId
+                        && entry._Roles.Any(role => role._Role.CanSendMessage)
+                );
+        }
 
-            if (sub == null) return false;
-            else if (sub.CanSendMessage) return true;
-            else return false;
+        public async Task<ChannelRole> GetUserPermission(Ulid userId, Ulid channelId)
+        {
+            var list = await db.ChannelUserTable.AsQueryable().Where(
+                   entry =>
+                       entry.UserId == userId
+                       && entry.ChannelId == channelId
+               ).SelectMany(
+                   entry => entry._Roles.Select(entry => entry._Role)
+               ).ToListAsync();
+            return list.Aggregate(ChannelRole.FoldRole);
         }
 
         public async Task<bool> CanUserSendInChannel(string userEmail, Ulid channelId)
         {
-            var user = await db.Users.SingleOrDefaultAsync(user => user.Email == userEmail);
+            var user = await db.Users.AsQueryable()
+                .SingleOrDefaultAsync(user => user.Email == userEmail);
             if (user == null) return false;
 
             return await CanUserSendInChannel(user.UserId, channelId);
         }
 
-        public async ValueTask<bool> GenerateLoginCode(string userEmail, UserLoginCode code)
+        public async ValueTask<(bool, Ulid)> GenerateLoginCodeOrAddUser(string userEmail, UserLoginCode code)
         {
-            var user = await db.Users.SingleOrDefaultAsync(user => user.Email == userEmail);
-            if (user is null) return false;
-            user._LoginCodes.Add(code);
+            var user = await db.Users.AsQueryable()
+                .SingleOrDefaultAsync(user => user.Email == userEmail);
+            var newUser = user is null;
+            if (user is null)
+            {
+                user = new User()
+                {
+                    UserId = Ulid.NewUlid(),
+                    Email = userEmail,
+                    Nickname = null
+                };
+                db.Add(user);
+            }
+            user._LoginCodes!.Add(code);
             await db.SaveChangesAsync();
-            return true;
+            return (newUser, user.UserId);
         }
 
         public async Task<bool> CanUserLoginWithCode(string userEmail, string code)
         {
             var now = DateTimeOffset.Now;
 
-            var result = await db.Users.Where(user => user.Email == userEmail)
-                       .SelectMany(user => user._LoginCodes.Where(
-                               loginCode => loginCode.Code == code && loginCode.Expires > now))
-                       .DeleteAsync();
-
-            // // prune codes
-            // await db.Users
-            //     .SelectMany(u => u._LoginCodes.Where(code => code.Expires <= now))
-            //     .DeleteAsync();
+            var result = await db.Users.AsQueryable()
+                .Where(user => user.Email == userEmail)
+                .SelectMany(user => user._LoginCodes.Where(
+                        loginCode => loginCode.Code == code && loginCode.Expires > now))
+                .DeleteAsync();
 
             return result > 0;
         }
 
         public async Task<IList<HatoAttachment>> GetAttachmentsFromIdAsync(IList<Ulid> ids)
         {
-            return await this.db.Attachments.Where(att => ids.Contains(att.AttachmentId))
+            return await this.db.Attachments.AsQueryable()
+                .Where(att => ids.Contains(att.AttachmentId))
                 .ToListAsync();
         }
 

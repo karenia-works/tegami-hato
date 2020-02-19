@@ -63,8 +63,9 @@ namespace Karenia.TegamiHato.Server.Services
             var senderEmail = origin["email"].Value;
             var senderNickname = origin["nick"].Value;
 
-            var allTargetChannels = await this.db.db.Channels.Where(ch => targetChannelIds.Contains(ch.ChannelId)
-            || targetChannels.Contains(ch.ChannelUsername)).ToListAsync();
+            var allTargetChannels = await this.db.db.Channels
+                .AsQueryable().Where(ch => targetChannelIds.Contains(ch.ChannelId)
+                    || targetChannels.Contains(ch.ChannelUsername)).ToListAsync();
             var allTargetChannelIds = allTargetChannels.Select(ch => ch.ChannelId).ToList();
 
             var msg = new HatoMessage()
@@ -176,17 +177,7 @@ namespace Karenia.TegamiHato.Server.Services
 
         public async Task<List<IGrouping<string, string>>> GetEmailsFromChannelIds(IList<Ulid> channelIds)
         {
-            var allTargetEmails = await this.
-               db.db.ChannelUserTable
-               .Where(u => channelIds.Contains(u.ChannelId) && u.CanReceiveMessage)
-               .Include(u => u._User)
-               .Include(u => u._Channel)
-               .ToListAsync();
-            var resultEmails = allTargetEmails.GroupBy(
-                entry => entry._Channel.ChannelUsername ?? entry.ChannelId.ToString(),
-                entry => entry._User.Email
-            ).ToList();
-            return resultEmails;
+            return await db.GetAllReceiverEmails(channelIds);
         }
 
         public EmailData HatoMessageToEmailDataPartial(HatoMessage msg)
@@ -222,7 +213,6 @@ namespace Karenia.TegamiHato.Server.Services
                 {
                     AttachmentId = att.AttachmentId,
                     MsgId = msg.MsgId,
-                    RelId = Ulid.NewUlid()
                 });
             }
         }
