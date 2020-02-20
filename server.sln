@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Karenia.TegamiHato.Server", "Karenia.TegamiHato.Server.csproj", "{DD28D543-AD96-4876-9587-C55F801A02CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Karenia.TegamiHato.Server", "server/Karenia.TegamiHato.Server.csproj", "{DD28D543-AD96-4876-9587-C55F801A02CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

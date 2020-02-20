@@ -1,1 +1,38 @@
-<p>login-page works!</p>
+<div class="container">
+  <div class="login">
+    <h1 class="title">登录</h1>
+    <form [formGroup]="loginForm" 
+      (ngSubmit)="login(loginForm.value)">
+      <div>
+        <label for="email"><h4 class="label">邮箱</h4></label>
+        <div class="row">
+          <input id="email" type="text" class="textbox email"
+              placeholder="me@example.com"
+              formControlName="email">
+          <button type="button" 
+            class="btn-light code-btn"
+            (click)="vertiCode()">
+            获取验证码
+          </button>
+        </div>
+      </div>
+      
+      <div class="info">
+        请检查您的邮箱，输入收到的验证码进行登录。
+        如果您是第一次登录，我们将为您自动注册一个账号。
+      </div>
+      
+      <div>
+        <label for="code"><h4 class="label">验证码</h4></label>
+        <input id="code" type="text" class="textbox"
+            placeholder="123-456-abc-edf"
+            formControlName="vertiCode">
+      </div>
+
+      <button type="submit" class="btn login-btn"
+        [routerLink]="">
+        登录
+      </button>
+    </form>
+  </div>
+</div>

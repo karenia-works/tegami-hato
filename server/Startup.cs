@@ -42,12 +42,13 @@ namespace Karenia.TegamiHato.Server
             services.AddDistributedMemoryCache();
 
 
+            var pgsqlLinkParams = Environment.GetEnvironmentVariable("hato_pgsql");
             // * Database
             services.AddDbContext<Models.EmailSystemContext>(
                 options =>
                 {
                     options.UseNpgsql(
-                        "Host=localhost;Database=hato_db;Port=54321;Username=postgres;Password=postgres"
+                       pgsqlLinkParams
                     );
                 }
             );
