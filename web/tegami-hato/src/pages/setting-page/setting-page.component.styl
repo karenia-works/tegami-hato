@@ -1,0 +1,125 @@
+.setup {
+    display: flex;
+    flex-direction: column;
+
+    .groupName {
+        margin: 10px 0 10px 0;
+    }
+
+    .groupUserName {
+        margin: 10px 0 10px 0;
+    }
+
+    .name {
+        font-size: var(--theme-size-large);
+        font-weight: bold;
+    }
+
+    .input {
+        width: 96%;
+    }
+}
+
+.check {
+    border-color: var(--theme-text-header-color);
+    border: 1px solid;
+}
+
+.public {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .name {
+        font-size: var(--theme-size-larger);
+        font-weight: bold;
+    }
+}
+
+.save {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.link {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .link_content {
+        display: flex;
+        flex-direction: row;
+
+        .link_head {
+            font-size: var(--theme-size-larger);
+            font-weight: bold;
+            color: var(--theme-text-info-color);
+        }
+
+        .link_tail {
+            font-size: var(--theme-size-larger);
+            font-weight: bolder;
+        }
+    }
+}
+
+.link_info {
+    display: flex;
+    flex-direction: row;
+    margin-top: var(--theme-pad-01);
+    margin-bottom: var(--theme-pad-03);
+
+    .dead_time {
+        width: 20%
+        font-weight: bold;
+    }
+
+    .authority {
+        font-weight: bold;
+        color: var(--theme-text-info-color);
+    }
+}
+
+.share_title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .icon {
+        color: var(--theme-header-color);
+    }
+}
+
+.manage {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .name {
+        font-size: var(--theme-size-larger);
+        font-weight: bold;
+    }
+
+    .icon {
+    }
+}
+
+.manage_info {
+    display: flex;
+    flex-direction: row;
+    margin-top: var(--theme-pad-01);
+    margin-bottom: var(--theme-pad-03);
+
+    .email {
+        width: 20%
+        margin-right: var(--theme-pad-04);
+        font-weight: bold;
+    }
+
+    .authority {
+        font-weight: bold;
+        color: var(--theme-text-info-color);
+    }
+}
