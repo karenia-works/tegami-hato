@@ -170,7 +170,6 @@ button {
   font-weight: bold;
   font-size: var(--theme-button-size);
   line-height: 24px;
-  line-height: 24px;
   transition: all 150ms ease-in-out;
   user-select: none;
   outline: none;
@@ -178,6 +177,7 @@ button {
   border-style: solid;
   border-radius: 4px;
   cursor: pointer;
+  // box-sizing: border-box;
 }
 
 .btn {
@@ -228,7 +228,7 @@ textbox-default-border-color = var(--theme-base05);
 textbox-default-accent-color = var(--theme-accent);
 
 .textbox {
-  height: 28px;
+  height: 40px;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -244,6 +244,8 @@ textbox-default-accent-color = var(--theme-accent);
   font-weight: normal;
   font-size: var(--theme-textbox-size);
   transition: all 150ms ease-in-out;
+  outline: 0;
+  box-sizing: border-box;
 
   &::placeholder {
     color: var(--textbox-placeholder-color, textbox-default-placeholder-color);
@@ -266,6 +268,9 @@ textbox-default-accent-color = var(--theme-accent);
 }
 
 .card {
+  min-width: 300px;
+  width: 100%;
+  box-sizing: border-box;
   background-color: var(--theme-window-color);
   padding: var(--theme-pad-04);
   border-width: 0;

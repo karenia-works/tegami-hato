@@ -1,0 +1,56 @@
+.container {
+    display: flex;
+    min-height: 70vh;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.login {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 480px;
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .title {
+        margin: 0 0 24px;
+    }
+
+    .info {
+        font-size: var(--theme-textbox-size)
+        color: var(--textbox-text-color);
+        margin: var(--theme-pad-03) 0; 
+
+        & span {
+            display: block
+        }
+    }
+
+    .label {
+        margin: 0 0 5px;
+    }
+
+    .textbox.email {
+        min-width: 140px;
+    }
+
+    .code-btn {
+        width: 150px;
+        min-width: 110px;
+        margin-left: var(--theme-pad-03);
+    }
+
+    .login-btn {
+        width 200px;
+        align-self: flex-end;
+        margin-top: 40px;
+    }
+}
