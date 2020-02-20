@@ -7,21 +7,22 @@
       <app-searchbar></app-searchbar>
     </div>
     <div class="btn_d">
-      <button class="btn-light btn-follow">已关注</button>
-      <button class="btn-light btn-follow btn-cog" [routerLink]="">
+      <button class="btn btn-follow" disabled>已关注</button>
+      <button class="btn btn-follow btn-cog" [routerLink]="'setting'">
         <mat-icon svgIcon="cogs"></mat-icon>
       </button>
     </div>
   </div>
-  <div>
+  <div class="card" (click)="clickNew()">
     <div *ngIf="!showNew; then notNew; else New"></div>
     <ng-template #notNew>
-      <div class="line card new title" (click)="clickNew()">
-        <mat-icon svgIcon="plus" class="icon"></mat-icon>新邮件
+      <div class="new">
+        <mat-icon svgIcon="plus" class="icon"></mat-icon>
+        <span class="title">新邮件</span>
       </div>
     </ng-template>
     <ng-template #New>
-      <div class="line card open_new" (click)="clickNew()">
+      <div class="open_new">
         <div class="input">
           <input
             name="search_box"
@@ -58,10 +59,11 @@
       </div>
     </ng-template>
   </div>
+  
   <div class="info">
     <div
       *ngFor="let notice of channelMessages; let i = index"
-      class="line card"
+      class="card"
       (click)="clickToOpen(i)"
     >
       <div *ngIf="showThis != i; then notOpen; else Open"></div>
