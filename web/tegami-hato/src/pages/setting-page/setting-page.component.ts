@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
-import { userList, linkList } from "../../sample/followList";
-import { channel } from "../../assets/sampleData";
+import { userList } from "../../sample/followList";
+import { channel, InvitationLink } from "../../assets/sampleData";
 
 @Component({
   selector: "app-setting-page",
@@ -13,8 +13,8 @@ export class SettingPageComponent implements OnInit {
   isPublic;
   shareLink;
   userList = userList;
-  linkList = linkList;
   channel = channel;
+  InvitationLink= InvitationLink;
   constructor() {}
 
   ngOnInit() {
