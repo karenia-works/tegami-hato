@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using Z.EntityFramework.Plus;
+using System.Collections;
 
 namespace Karenia.TegamiHato.Server.Services
 {
@@ -14,6 +15,7 @@ namespace Karenia.TegamiHato.Server.Services
         Success,
         AlreadyExist,
         Forbidden,
+        NotFound,
     }
 
     public enum UpdateResult
@@ -231,7 +233,11 @@ namespace Karenia.TegamiHato.Server.Services
                 .AsAsyncEnumerable();
         }
 
-        public async Task<AddResult> AddUserToChannel(Ulid userId, Ulid channelId)
+        public async Task<AddResult> AddUserToChannel(
+            Ulid userId,
+            Ulid channelId,
+            UserPermission? permission = null,
+            bool addToPrivateChannel = false)
         {
             var userAlreadyInChannel = await db
                 .ChannelUserTable
@@ -244,10 +250,45 @@ namespace Karenia.TegamiHato.Server.Services
 
             if (userAlreadyInChannel) return AddResult.AlreadyExist;
 
-            // TODO: Add user and default role
+            var channel = await db.Channels.AsQueryable()
+                .SingleOrDefaultAsync(ch => ch.ChannelId == channelId);
+
+            if (channel == null) return AddResult.NotFound;
+            if (!addToPrivateChannel && !channel.IsPublic) return AddResult.Forbidden;
+
+            var relation = new ChannelUserRelation()
+            {
+                UserId = userId,
+                ChannelId = channelId,
+                IsCreator = false,
+                Permission = permission ?? channel.DefaultPermission
+            };
+
+            db.ChannelUserTable.Add(relation);
 
             await db.SaveChangesAsync();
             return AddResult.Success;
+        }
+
+        public async Task<UpdateResult> RemoveUserFromCannel(
+            Ulid userId,
+            Ulid channelId)
+        {
+            var deleteResult = await db
+               .ChannelUserTable
+               .AsQueryable()
+               .Where(
+                   entry =>
+                       entry.UserId == userId && entry.ChannelId == channelId
+               )
+               .DeleteAsync();
+
+            return deleteResult switch
+            {
+                0 => UpdateResult.NotExist,
+                1 => UpdateResult.Success,
+                _ => UpdateResult.UnexpectedMultiple
+            };
         }
 
         [Obsolete]
@@ -283,6 +324,31 @@ namespace Karenia.TegamiHato.Server.Services
             return result;
         }
 
+        public class SimpleGroup<TK, TV> : IGrouping<TK, TV>
+        {
+            public SimpleGroup(TK key, List<TV> values)
+            {
+                Key = key;
+                Values = values;
+            }
+
+            TK Key { get; set; }
+            List<TV> Values { get; set; }
+
+            TK IGrouping<TK, TV>.Key => this.Key;
+
+
+            public IEnumerator<TV> GetEnumerator()
+            {
+                return this.Values.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.Values.GetEnumerator();
+            }
+        }
+
         public async Task<List<IGrouping<string, string>>> GetAllReceiverEmails(
             ICollection<Ulid> channelIds)
         {
@@ -292,8 +358,14 @@ namespace Karenia.TegamiHato.Server.Services
                 .Where(entry =>
                    channelIds.Contains(entry.ChannelId)
                     && ((entry.Permission & UserPermission.Receive) != 0))
+                .Include(entry => entry._Channel)
+                .Include(entry => entry._User)
+                .AsAsyncEnumerable()
                 .GroupBy(entry => entry._Channel.ChannelUsername, entry => entry._User.Email)
-                .ToListAsync();
+                .SelectAwait(async entry =>
+                    (IGrouping<string, string>)
+                    new SimpleGroup<string, string>(entry.Key, await entry.ToListAsync())
+                ).ToListAsync();
 
             return await result;
         }
@@ -393,7 +465,8 @@ namespace Karenia.TegamiHato.Server.Services
                 {
                     UserId = Ulid.NewUlid(),
                     Email = userEmail,
-                    Nickname = null
+                    Nickname = null,
+                    _LoginCodes = new List<UserLoginCode>()
                 };
                 db.Add(user);
             }

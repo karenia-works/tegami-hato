@@ -143,6 +143,44 @@ namespace Karenia.TegamiHato.Server.Controllers
                         AddResult.AlreadyExist => BadRequest(new ErrorResult(
                             "resource already exists",
                             "The user has already been in the channel")),
+                        _ => BadRequest(new ErrorResult(
+                            "Unable to join into channel.",
+                            "Either it doesn't exist at all or it's private.")),
+                    };
+                }
+                else
+                {
+                    return BadRequest(new ErrorResult(
+                        "not deserialized", $"'{userId}' is not a valid Ulid"));
+                }
+            }
+            else
+            {
+                return BadRequest(new ErrorResult(
+                    "not deserialized", $"'{id}' is not a valid Ulid"));
+            }
+        }
+
+        [HttpPost]
+        [Authorize("api")]
+        [Route("quit")]
+        public async Task<IActionResult> QuitChannel(string id)
+        {
+
+            var userId = HttpContext.User.Claims.Where(claim => claim.Type == "sub")
+                .Select(claim => claim.Value)
+                .Single();
+            if (Ulid.TryParse(id, out var _channelId))
+            {
+                if (Ulid.TryParse(userId, out var _userId))
+                {
+                    var result = await this._db.RemoveUserFromCannel(_userId, _channelId);
+                    return result switch
+                    {
+                        UpdateResult.Success => NoContent(),
+                        UpdateResult.NotExist => BadRequest(new ErrorResult(
+                            "User is not in channel",
+                            "The user is not in the channel")),
                         _ => BadRequest(),
                     };
                 }
@@ -176,7 +214,7 @@ namespace Karenia.TegamiHato.Server.Controllers
             public string? bodyHtml { get; set; }
 
             public List<string> attachments { get; set; }
-
+            public List<string> tags { get; set; }
         }
 
         [HttpPost]
@@ -188,6 +226,8 @@ namespace Karenia.TegamiHato.Server.Controllers
         )
         {
             if (!Ulid.TryParse(id, out var _id)) return BadRequest();
+            // TODO: Can this be merged into one call?
+
             var userId = Ulid.Parse(HttpContext.User.Claims.Where(claim => claim.Type == "sub")
                    .Select(claim => claim.Value)
                    .Single());
@@ -208,6 +248,7 @@ namespace Karenia.TegamiHato.Server.Controllers
                 Attachments = attachments,
                 SenderEmail = userInfo.Email,
                 SenderNickname = userInfo.Nickname,
+                Tags = apiMessage.tags,
             };
             await this._db.SaveMessageIntoChannel(message, _id);
 
