@@ -20,9 +20,4 @@ export class NavbarComponent implements OnInit {
     // this.isloggedIn = this.userService.getLogin();
     // this.userName = this.userService.getEmail();
   }
-
-  // ngOnChanges() {
-  //   this.isloggedIn = this.userService.getLogin();
-  //   this.userName = this.userService.getEmail();
-  // }
 }

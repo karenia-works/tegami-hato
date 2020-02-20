@@ -6,29 +6,28 @@ export const recentMessages = [
     bodyPlain:
       "https://docs.qq.com/form/fill/DWUNDeFR3TklsblRK?_w_tencentdocx_form=1\
 			需要补选课程的同学请填写问卷并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。",
-    title: "软件学院2020年春季学期本科生补选课程选课申请表",
-    senderNickname: "费心怡",
-    senderEmail: "fxy@buaa.edu.cn"
-  },
-  {
-    channelId: "01E175XZQJHXTBSQ33E68X6H0K",
-    channelTitle: "2020 春季职业规范和企业文化",
-    msgId: "01E17668GM8474SNQDY9KRDQVE",
-    bodyPlain: "课程MOOC形式，会有资料上传，平时上课时间组织答疑",
-    title: "课程MOOC形式，请同学们加入微信群",
-    senderNickname: "杨虹晴",
-    senderEmail: "yhq@buaa.edu.cn"
-  },
-  {
-    channelId: "01E175XZQJHXTBSQ33E68X6H0K",
-    channelTitle: "1721 编译原理通知",
-    msgId: "01E17668GM8474SNQDY9KRDQVE",
-    bodyPlain:
-      "编译原理的成绩已经在论坛给出，大家的成绩编号可以在大班公邮(buaasoft_1721@163.com)查看",
-    title: "编译原理的成绩已经在论坛给出",
-    senderNickname: "慕紫月",
-    senderEmail: "liming@buaa.edu.cn"
-  }
+        "title": "软件学院2020年春季学期本科生补选课程选课申请表",
+        "senderNickname" : "费心怡",
+        "senderEmail" : "fxy@buaa.edu.cn"
+    },
+    {
+        "channelId": "01E175XZQJHXTBSQ33E68X6H0K",
+        "channelTitle": "2020 春季职业规范和企业文化",
+        "msgId": "01E17668GM8474SNQDY9KRDQVE",
+        "bodyPlain": "课程MOOC形式，会有资料上传，平时上课时间组织答疑",
+        "title": "课程MOOC形式，请同学们加入微信群",
+        "senderNickname" : "杨晴虹",
+        "senderEmail" : "yhq@buaa.edu.cn"
+    },
+    {
+        "channelId": "01E175XZQJHXTBSQ33E68X6H0K",
+        "channelTitle": "1721 编译原理通知",
+        "msgId": "01E17668GM8474SNQDY9KRDQVE",
+        "bodyPlain": "编译原理的成绩已经在论坛给出，大家的成绩编号可以在大班公邮(buaasoft_1721@163.com)查看",
+        "title": "编译原理的成绩已经在论坛给出",
+        "senderNickname" : "慕紫月",
+        "senderEmail" : "liming@buaa.edu.cn"
+    }
 ];
 
 export const channelMessages = [

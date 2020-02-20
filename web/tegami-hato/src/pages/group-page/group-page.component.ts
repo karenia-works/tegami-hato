@@ -37,7 +37,7 @@ export class GroupPageComponent implements OnInit {
     }
   }
 
-  clickNew() {
-    this.showNew = true;
+  clickNew(){
+    this.showNew = !this.showNew;
   }
 }
