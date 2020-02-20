@@ -40,29 +40,32 @@ export const NoticeList = [
 export const userList = [
   {
     name: "Rynco Maekawa",
-    email:"i@rynco.me"
+    email:"i@rynco.me",
+    authority:"R | S | E | M | I"
   },
   {
     name: "Slyvia Wang",
-    email:"skuld@karenia.cc"
+    email:"skuld@karenia.cc",
+    authority:"Creator"
   },
   {
     name: "Maksim Xing",
-    email:"maksimx@gmail.com"
+    email:"maksimx@gmail.com",
+    authority:"R | S"
   }
 ];
 
 export const linkList = [
   {
-    link: "hato/AXBYUom4Nf2GDcMyaH3ppw",
+    link: "AXBYUom4Nf2GDcMyaH3pw",
     deadTime: "2028-10-09 00:00"
   },
   {
-    link: "hato/UIFWuifwud(dfwiufeww",
+    link: "UIFWuifwudWEFgdfwiufewQ",
     deadTime: "2048-11-12 00:00"
   },
   {
-    link: "hato/98d*D(W9fw89daw8d9",
+    link: "98dIDeWLG9fw89daJwK8dM",
     deadTime: "2028-12-13 00:00"
   }
 ];
