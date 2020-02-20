@@ -1,14 +1,14 @@
 <div class="container">
-  <h4>@{{ groupUserName }}</h4>
+  <h4>@{{ channel.channelUsername }}</h4>
   <h1>频道设置</h1>
   <div class="setup">
     <div class="groupName">
       <div class="name">频道名称</div>
-      <input [placeholder]="groupName" class="search-box textbox input" />
+      <input [placeholder]="channel.channelTitle" class="search-box textbox input" />
     </div>
     <div class="groupUserName">
       <div class="name">频道用户名</div>
-      <input [placeholder]="groupUserName" class="search-box textbox input" />
+      <input [placeholder]="channel.channelUsername" class="search-box textbox input" />
     </div>
   </div>
 

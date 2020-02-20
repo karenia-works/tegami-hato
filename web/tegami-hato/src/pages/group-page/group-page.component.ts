@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { NoticeList } from "../../sample/followList";
+import { channelMessages, channel } from "../../assets/sampleData";
 
 @Component({
   selector: "app-group-page",
@@ -11,8 +11,9 @@ export class GroupPageComponent implements OnInit {
   followNum;
   showThis;
   showNew;
-  NoticeList = NoticeList;
-  listLength = NoticeList.length;
+  channelMessages = channelMessages;
+  listLength = channelMessages.length;
+  channel = channel;
   constructor() {}
 
   ngOnInit() {
@@ -36,7 +37,7 @@ export class GroupPageComponent implements OnInit {
     }
   }
 
-  clickNew(){
+  clickNew() {
     this.showNew = true;
   }
 }

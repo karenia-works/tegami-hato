@@ -1,6 +1,6 @@
 <div class="container">
-  <h1>#{{ groupName }}</h1>
-  <h4>关注人数:{{ followNum }}</h4>
+  <h1>#{{ channel.channelTitle }}</h1>
+  <h4>关注人数:{{ channel.userNumber }}</h4>
 
   <div class="searchAndFollow">
     <div class="bar">
@@ -57,7 +57,7 @@
   </div>
   <div class="info">
     <div
-      *ngFor="let notice of NoticeList; let i = index"
+      *ngFor="let notice of channelMessages; let i = index"
       class="line card"
       (click)="clickToOpen(i)"
     >
@@ -75,14 +75,14 @@
           </div>
           <div class="sub">
             <div class="from">
-              {{ notice.from }}
+              {{ notice.senderNickname }} < {{ notice.senderEmail }} >
             </div>
             <div class="time">
-              {{ notice.time }}
+              {{ notice.timestamp }}
             </div>
           </div>
           <div class="content">
-            {{ notice.content }}
+            {{ notice.bodyPlain }}
           </div>
         </div>
       </ng-template>

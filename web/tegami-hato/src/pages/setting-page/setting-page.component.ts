@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { userList,linkList } from "../../sample/followList";
+import { Component, OnInit } from "@angular/core";
+import { userList, linkList } from "../../sample/followList";
+import { channel } from "../../assets/sampleData";
 
 @Component({
-  selector: 'app-setting-page',
-  templateUrl: './setting-page.component.html',
-  styleUrls: ['./setting-page.component.styl']
+  selector: "app-setting-page",
+  templateUrl: "./setting-page.component.html",
+  styleUrls: ["./setting-page.component.styl"]
 })
 export class SettingPageComponent implements OnInit {
   groupName;
@@ -13,6 +14,7 @@ export class SettingPageComponent implements OnInit {
   shareLink;
   userList = userList;
   linkList = linkList;
+  channel = channel;
   constructor() {}
 
   ngOnInit() {

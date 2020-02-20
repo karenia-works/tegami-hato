@@ -21,7 +21,7 @@ const routes: Routes = [
   },
   {
     path: "follow",
-    component: SettingPageComponent
+    component: FollowPageComponent
   },
   {
     path: "channel",
