@@ -1,8 +1,10 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 as build
 WORKDIR /app
-COPY ./* hato/
+COPY ./Karenia.TegamiHato.Server.csproj /app/hato/
 WORKDIR /app/hato/
 RUN dotnet restore
+
+COPY ./* /app/hato/
 RUN dotnet publish -c Release -v m -o /app/bin/hato
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 as runtime

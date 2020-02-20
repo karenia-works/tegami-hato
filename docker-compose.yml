@@ -1,0 +1,16 @@
+version: "3.7"
+services:
+  hato_server:
+    image: hato/hato_server
+    build: server/
+    environment:
+      - hato_pgsql=Host=localhost;Database=hato_db;Port=54321;Username=postgres;Password=postgres
+    env_file: .env
+    link: server_pgsql
+    depends_on:
+      - server_pgsql
+  server_pgsql:
+    image: hato/pgsql_jieba
+    build:
+      context: .
+      file: pgsql-jieba.Dockerfile
