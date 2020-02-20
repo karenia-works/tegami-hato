@@ -78,10 +78,10 @@
           </div>
           <div class="sub">
             <div class="from">
-              {{ notice.senderNickname }} < {{ notice.senderEmail }} >
+              {{ notice.senderNickname }} &lt; {{ notice.senderEmail }} &gt;
             </div>
             <div class="time">
-              {{ notice.timestamp }}
+              {{ ulidTime(notice.msgId) | date:"yyyy/MM/dd H:mm" }}
             </div>
           </div>
           <div class="content">

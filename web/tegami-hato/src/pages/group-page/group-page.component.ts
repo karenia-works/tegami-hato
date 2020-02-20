@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { channelMessages, channel } from "../../assets/sampleData";
+import { decodeTime } from 'ulid'
 
 @Component({
   selector: "app-group-page",
@@ -39,5 +40,9 @@ export class GroupPageComponent implements OnInit {
 
   clickNew(){
     this.showNew = !this.showNew;
+  }
+
+  ulidTime(id: string): number {
+    return decodeTime(id);
   }
 }
