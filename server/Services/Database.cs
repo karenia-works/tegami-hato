@@ -15,6 +15,7 @@ namespace Karenia.TegamiHato.Server.Services
         Success,
         AlreadyExist,
         Forbidden,
+        NotFound,
     }
 
     public enum UpdateResult
@@ -232,7 +233,11 @@ namespace Karenia.TegamiHato.Server.Services
                 .AsAsyncEnumerable();
         }
 
-        public async Task<AddResult> AddUserToChannel(Ulid userId, Ulid channelId)
+        public async Task<AddResult> AddUserToChannel(
+            Ulid userId,
+            Ulid channelId,
+            UserPermission? permission = null,
+            bool addToPrivateChannel = false)
         {
             var userAlreadyInChannel = await db
                 .ChannelUserTable
@@ -245,10 +250,45 @@ namespace Karenia.TegamiHato.Server.Services
 
             if (userAlreadyInChannel) return AddResult.AlreadyExist;
 
-            // TODO: Add user and default role
+            var channel = await db.Channels.AsQueryable()
+                .SingleOrDefaultAsync(ch => ch.ChannelId == channelId);
+
+            if (channel == null) return AddResult.NotFound;
+            if (!addToPrivateChannel && !channel.IsPublic) return AddResult.Forbidden;
+
+            var relation = new ChannelUserRelation()
+            {
+                UserId = userId,
+                ChannelId = channelId,
+                IsCreator = false,
+                Permission = permission ?? channel.DefaultPermission
+            };
+
+            db.ChannelUserTable.Add(relation);
 
             await db.SaveChangesAsync();
             return AddResult.Success;
+        }
+
+        public async Task<UpdateResult> RemoveUserFromCannel(
+            Ulid userId,
+            Ulid channelId)
+        {
+            var deleteResult = await db
+               .ChannelUserTable
+               .AsQueryable()
+               .Where(
+                   entry =>
+                       entry.UserId == userId && entry.ChannelId == channelId
+               )
+               .DeleteAsync();
+
+            return deleteResult switch
+            {
+                0 => UpdateResult.NotExist,
+                1 => UpdateResult.Success,
+                _ => UpdateResult.UnexpectedMultiple
+            };
         }
 
         [Obsolete]
