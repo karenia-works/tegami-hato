@@ -31,6 +31,6 @@ export class LoginPageComponent implements OnInit {
   login(data) {
     this.userService.login(data.email);
     window.alert("欢迎，" + data.email);
-    this.router.navigate(['']);
+    this.router.navigate(['/follow']);
   }
 }
