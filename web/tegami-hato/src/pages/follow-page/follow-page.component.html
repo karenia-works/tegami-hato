@@ -6,7 +6,7 @@
   </div>
   <div class="list">
     <div *ngFor="let chl of channels" 
-          class="channel"
+          class="channel card"
           [routerLink]="['/channel', chl.channelId]">
       <div class="channel-info">
         <span class="title">{{chl.channelTitle}}</span>

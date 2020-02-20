@@ -265,6 +265,23 @@ textbox-default-accent-color = var(--theme-accent);
   }
 }
 
+.card {
+  background-color: var(--theme-window-color);
+  padding: var(--theme-pad-04);
+  border-width: 0;
+  border-radius: 4px;
+  display: flex;
+  flex-flow: column;
+  box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+  color: var(--theme-text-color);
+
+  &:hover {
+    box-shadow: 0px 5px 15px 0px rgba(0,0,0,0.2);
+    cursor: pointer;
+  }
+}
+
+
 // mdi
 button.mat-menu-item {
   line-height: 24px !important;

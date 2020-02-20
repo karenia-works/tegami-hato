@@ -7,7 +7,7 @@
       <app-searchbar></app-searchbar>
     </div>
     <div class="btn_d">
-      <button class="btn2 btn btn-light btn-follow">关注</button>
+      <button class="btn-light btn-follow">关注</button>
     </div>
   </div>
   <div *ngIf="!showNew; then notNew; else New"></div>
@@ -17,7 +17,7 @@
     </button>
   </ng-template>
   <ng-template #New>
-    <button class="btn-light btn btn-wide btn-new-open" disabled="disabled">
+    <button class="btn-light btn-wide btn-new-open" disabled="disabled">
       <div class="input">
         <input
           name="search_box"
@@ -54,35 +54,34 @@
     </button>
   </ng-template>
   <div class="info">
-    <div *ngFor="let notice of NoticeList; let i = index" class="line">
+    <div *ngFor="let notice of NoticeList; let i = index" 
+          class="line card"
+          (click)="clickToOpen(i)">
+
       <div *ngIf="showThis != i; then notOpen; else Open"></div>
       <ng-template #notOpen>
-        <button class="btn-light btn btn-wide" (click)="clickToOpen(i)">
-          {{ notice.title }}
-        </button>
+        <div class="title">
+          {{notice.title}}
+        </div>
       </ng-template>
+      
       <ng-template #Open>
-        <button
-          class="btn-light btn btn-wide btn-read"
-          (click)="clickToOpen(i)"
-        >
-          <div class="inside">
-            <div class="title">
-              {{ notice.title }}
+        <div class="inside">
+          <div class="title">
+            {{ notice.title }}
+          </div>
+          <div class="sub">
+            <div class="from">
+              {{ notice.from }}
             </div>
-            <div class="sub">
-              <div class="from">
-                {{ notice.from }}
-              </div>
-              <div class="time">
-                {{ notice.time }}
-              </div>
-            </div>
-            <div class="content">
-              {{ notice.content }}
+            <div class="time">
+              {{ notice.time }}
             </div>
           </div>
-        </button>
+          <div class="content">
+            {{ notice.content }}
+          </div>
+        </div>
       </ng-template>
     </div>
   </div>
