@@ -194,6 +194,11 @@ button {
   &:disabled {
     background-color: var(--btn-disabled-color);
     border-color: var(--btn-disabled-color);
+
+    &:hover {
+      box-shadow: 0 0 0 0 rgba(0,0,0,0);
+      cursor: default;
+    }
   }
 
   &:active {
@@ -280,6 +285,7 @@ textbox-default-accent-color = var(--theme-accent);
   box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
   color: var(--theme-text-color);
   transition: all 150ms ease-in-out;
+  outline: 0;
 
   &:hover {
     box-shadow: 0px 5px 15px 0px rgba(0,0,0,0.2);

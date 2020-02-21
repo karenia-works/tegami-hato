@@ -1,8 +1,8 @@
 export const recentMessages = [
     {
-        "channelId": "01E142V9Y1QAWE191250JDCDDJ",
+        "channelId": "01E1K53HW9MXR3D8MTR205MHFZ",
         "channelTitle": "1721 大班通知",
-        "msgId": "01E1HB66SGK2KEPGDHW6P3GMVQ",
+        "msgId": "01E1GKAN6GZ595N2DEP0E515JY",
         "bodyPlain": "https://docs.qq.com/form/fill/DWUNDeFR3TklsblRK?_w_tencentdocx_form=1\n			需要补选课程的同学请填写问卷并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。",
         "title": "软件学院2020年春季学期本科生补选课程选课申请表",
         "senderNickname" : "费心怡",
@@ -30,8 +30,8 @@ export const recentMessages = [
 
 export const channelMessages = [
     {
-        "msgId": "01E1HB66SGK2KEPGDHW6P3GMVQ",
-        "channelId": "01E142V9Y1QAWE191250JDCDDJ",
+        "msgId": "01E1GKAN6GZ595N2DEP0E515JY",
+        "channelId": "01E1K53HW9MXR3D8MTR205MHFZ",
         "timestamp": "2020-02-15T09:28:36.545+00:00",
         "senderEmail": "1261782580@qq.com",
         "senderNickname": "费心怡",
@@ -43,7 +43,7 @@ export const channelMessages = [
     },
     {
         "msgId": "01E1F3Q0BRFDRMDENHVZBXAEQY",
-        "channelId": "01E142V9Y1QAWE191250JDCDDJ",
+        "channelId": "01E1K53HW9MXR3D8MTR205MHFZ",
         "timestamp": "2020-02-15T09:28:36.545+00:00",
         "senderEmail": "847590417@qq.com",
         "senderNickname": "王宇轩",
@@ -54,8 +54,8 @@ export const channelMessages = [
         "tags": [],
     },
     {
-        "msgId": "01E16HT7PRVA3QB5QW814C9HNX",
-        "channelId": "01E142V9Y1QAWE191250JDCDDJ",
+        "msgId": "01E1F2337G46ZKFPPF98NYECVW",
+        "channelId": "01E1K53HW9MXR3D8MTR205MHFZ",
         "timestamp": "2020-02-15T09:28:36.545+00:00",
         "senderEmail": "sywang1207@gmail.com",
         "senderNickname": "朱辉",
@@ -67,7 +67,7 @@ export const channelMessages = [
     }];
 
 export const channel = {
-  "channelId": "01E142V9Y1QAWE191250JDCDDJ",
+  "channelId": "01E1K53HW9MXR3D8MTR205MHFZ",
   "channelUsername": "buaasoft_1721",
   "channelTitle": "1721 大班通知",
   "isPublic": true,

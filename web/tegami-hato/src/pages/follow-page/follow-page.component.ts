@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { decodeTime } from 'ulid'
+import { decodeTime } from 'ulid';
 import { recentMessages } from '../../assets/sampleData';
-import * as moment from 'moment/moment'
+import * as moment from 'moment/moment';
+// import {ulid} from 'ulid';
 
 @Component({
   selector: 'app-follow-page',
@@ -26,6 +27,7 @@ export class FollowPageComponent implements OnInit {
 
   ngOnInit() {
     moment.locale('zh-cn');
+    // console.log(ulid(new Date('2020/02/19 23:47:02').getTime()));
   }
 
 }
