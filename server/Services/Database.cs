@@ -233,6 +233,68 @@ namespace Karenia.TegamiHato.Server.Services
                 .AsAsyncEnumerable();
         }
 
+        public async Task<AddResult> AddInvitationLink(
+            InvitationLink link
+        )
+        {
+            try
+            {
+                db.InvitationLinks.Add(link);
+                await db.SaveChangesAsync();
+                return AddResult.Success;
+            }
+            catch (DbUpdateException)
+            {
+                return AddResult.Forbidden;
+            }
+        }
+
+        public async Task<UpdateResult> DeleteInvitationLink(
+            Ulid channelId,
+            string linkId
+        )
+        {
+            var deleteNum = await db.InvitationLinks.AsQueryable()
+                .Where(
+                    link => link.LinkId == linkId
+                        && link.ChannelId == channelId)
+                        .DeleteFromQueryAsync();
+            return deleteNum switch
+            {
+                0 => UpdateResult.NotExist,
+                1 => UpdateResult.Success,
+                _ => UpdateResult.UnexpectedMultiple
+            };
+        }
+
+        public async Task<InvitationLink?> GetInvitationLink(
+            string linkId
+        )
+        {
+            return await db.InvitationLinks.AsQueryable()
+                .SingleOrDefaultAsync(
+                    link => link.LinkId == linkId);
+        }
+        public async Task<InvitationLink?> GetInvitationLink(
+            Ulid channelId,
+            string linkId
+        )
+        {
+            return await db.InvitationLinks.AsQueryable()
+                .SingleOrDefaultAsync(
+                    link => link.LinkId == linkId
+                        && link.ChannelId == channelId);
+        }
+
+        public async Task<List<InvitationLink>> GetInvitationLinks(
+            Ulid channelId
+        )
+        {
+            return await db.InvitationLinks.AsQueryable()
+                .Where(inv => inv.ChannelId == channelId)
+                .ToListAsync();
+        }
+
         public async Task<AddResult> AddUserToChannel(
             Ulid userId,
             Ulid channelId,

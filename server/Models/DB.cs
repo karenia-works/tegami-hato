@@ -207,8 +207,27 @@ namespace Karenia.TegamiHato.Server.Models
             = UserPermission.Receive;
 
         public DateTimeOffset Expires { get; set; }
-            = new DateTimeOffset(long.MaxValue, TimeSpan.Zero);
+            = DateTimeOffset.MaxValue;
+
+        public const int LinkLength = 24;
+        public static string GenerateLinkId(DateTimeOffset timestamp, Random rng)
+        {
+            const int longbytes = sizeof(long);
+            Span<byte> linkBytes = stackalloc byte[LinkLength];
+            {
+                var timeSpan = linkBytes.Slice(0, longbytes);
+                var milliseconds = timestamp.ToUnixTimeMilliseconds();
+                BitConverter.TryWriteBytes(timeSpan, milliseconds);
+                if (BitConverter.IsLittleEndian) timeSpan.Reverse();
+            }
+            {
+                var randomSpan = linkBytes.Slice(longbytes);
+                rng.NextBytes(randomSpan);
+            }
+            return Convert.ToBase64String(linkBytes).Replace('+', '-').Replace('/', '_');
+        }
     }
+
 
     // Disable initialization warning because we don't need that for now
 

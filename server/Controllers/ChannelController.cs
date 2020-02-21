@@ -127,39 +127,39 @@ namespace Karenia.TegamiHato.Server.Controllers
         [Route("join")]
         public async Task<IActionResult> JoinChannel(
             [FromRoute] string id
-        // [FromQuery] string userId
         )
         {
             var userId = HttpContext.User.Claims.Where(claim => claim.Type == "sub")
                 .Select(claim => claim.Value)
                 .Single();
-            if (Ulid.TryParse(id, out var _channelId))
-            {
-                if (Ulid.TryParse(userId, out var _userId))
-                {
-                    var result = await this._db.AddUserToChannel(_userId, _channelId);
-                    return result switch
-                    {
-                        AddResult.Success => NoContent(),
-                        AddResult.AlreadyExist => BadRequest(new ErrorResult(
-                            "resource already exists",
-                            "The user has already been in the channel")),
-                        _ => BadRequest(new ErrorResult(
-                            "Unable to join into channel.",
-                            "Either it doesn't exist at all or it's private.")),
-                    };
-                }
-                else
-                {
-                    return BadRequest(new ErrorResult(
-                        "not deserialized", $"'{userId}' is not a valid Ulid"));
-                }
-            }
-            else
+            if (!Ulid.TryParse(id, out var _channelId))
             {
                 return BadRequest(new ErrorResult(
                     "not deserialized", $"'{id}' is not a valid Ulid"));
             }
+
+            if (!Ulid.TryParse(userId, out var _userId))
+            {
+                return BadRequest(new ErrorResult(
+                    "not deserialized", $"'{userId}' is not a valid Ulid"));
+            }
+
+            // Regular join without invitation
+            var result = await this._db.AddUserToChannel(
+                _userId,
+                _channelId,
+                addToPrivateChannel: false);
+
+            return result switch
+            {
+                AddResult.Success => NoContent(),
+                AddResult.AlreadyExist => BadRequest(new ErrorResult(
+                    "resource already exists",
+                    "The user has already been in the channel")),
+                _ => BadRequest(new ErrorResult(
+                    "Unable to join into channel.",
+                    "Either it doesn't exist at all or it's private.")),
+            };
         }
 
         [HttpPost]
@@ -314,6 +314,73 @@ namespace Karenia.TegamiHato.Server.Controllers
                 return BadRequest(new ErrorResult(
                     "not deserialized", $"'{id}' is not a valid Ulid"));
             }
+        }
+
+        [HttpPost]
+        [Route("invitation/create")]
+        public async Task<IActionResult> AddNewInvitation(
+            string id,
+            UserPermission defaultPermission = UserPermission.Receive,
+            DateTimeOffset? expires = null
+        )
+        {
+            if (!Ulid.TryParse(id, out var _id)) return BadRequest();
+            if (expires == null) expires = DateTimeOffset.MaxValue;
+            var invitationId = InvitationLink.GenerateLinkId(DateTimeOffset.Now, new Random());
+            var invitation = new InvitationLink()
+            {
+                ChannelId = _id,
+                LinkId = invitationId,
+                DefaultPermission = defaultPermission,
+                Expires = expires.Value
+            };
+            var result = await _db.AddInvitationLink(invitation);
+            return result switch
+            {
+                AddResult.Success => Ok(invitation),
+                AddResult.Forbidden => BadRequest(),
+                _ => BadRequest(),
+            };
+        }
+
+        [HttpGet]
+        [Route("invitation")]
+        public async Task<IActionResult> GetAllInvitations(
+            string id
+        )
+        {
+            if (!Ulid.TryParse(id, out var _id)) return BadRequest();
+            return Ok(await _db.GetInvitationLinks(_id));
+        }
+
+        [HttpGet]
+        [Route("invitation/{invitationId}")]
+        public async Task<IActionResult> GetInvitation(
+            string id,
+            [FromRoute] string linkId
+        )
+        {
+            if (!Ulid.TryParse(id, out var _id)) return BadRequest();
+            return Ok(await _db.GetInvitationLink(_id, linkId));
+        }
+
+        [HttpDelete]
+        [Route("invitation/{invitationId}")]
+        public async Task<IActionResult> RemoveInvitation(
+            string id,
+            [FromRoute] string linkId
+        )
+        {
+            if (!Ulid.TryParse(id, out var _id)) return BadRequest();
+            UpdateResult result = await _db.DeleteInvitationLink(_id, linkId);
+            return result switch
+            {
+                UpdateResult.Success => NoContent(),
+                UpdateResult.NotExist => BadRequest(new ErrorResult(
+                    "Invitation does not exist",
+                    "There's no such invitation in channel")),
+                _ => BadRequest(),
+            };
         }
     }
 }
