@@ -41,6 +41,7 @@ namespace Karenia.TegamiHato.Server
 
             services.AddDistributedMemoryCache();
 
+            var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2("../cert/ca.pfx", "hato_server");
 
             var pgsqlLinkParams = Environment.GetEnvironmentVariable("hato_pgsql");
             // * Database
@@ -119,7 +120,8 @@ namespace Karenia.TegamiHato.Server
             //    .AddPersistedGrantStore()
                .AddInMemoryApiResources(IdentityConstants.apiResources)
                .AddResourceOwnerValidator<UserIdentityService>()
-               .AddDeveloperSigningCredential()
+               .AddSigningCredential(cert, "RS256")
+            //    .AddDeveloperSigningCredential()
                .AddJwtBearerClientAuthentication();
 
             services.AddAuthorization(option =>
