@@ -70,7 +70,7 @@ export const channel = {
   "channelId": "01E142V9Y1QAWE191250JDCDDJ",
   "channelUsername": "buaasoft_1721",
   "channelTitle": "1721 大班通知",
-  "isPublic": "false",
+  "isPublic": true,
   "defaultPermission": "0x02",
   "userNumber": "178"
 }

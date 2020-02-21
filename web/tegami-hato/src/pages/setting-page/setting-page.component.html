@@ -5,6 +5,8 @@
     <div class="groupName">
       <div class="name">频道名称</div>
       <input
+        [value]="changedName"
+        (input)="changedName = $event.target.value"
         [placeholder]="channel.channelTitle"
         class="search-box textbox input"
       />
@@ -12,6 +14,8 @@
     <div class="groupUserName">
       <div class="name">频道用户名</div>
       <input
+        [value]="changedUserName"
+        (input)="changedUserName = $event.target.value"
         [placeholder]="channel.channelUsername"
         class="search-box textbox input"
       />
@@ -19,11 +23,18 @@
   </div>
 
   <div class="public">
-    <input type="checkbox" class="check" />
+    <input
+      name="test"
+      type="checkbox"
+      class="check"
+      ng-true-value="true"
+      ng-false-value="false"
+      [(ngModel)]="changePublic"
+    />
     <div class="name">公开频道</div>
   </div>
   <div class="save">
-    <button class="btn">保存</button>
+    <button class="btn" (click)="save()">保存</button>
   </div>
 
   <div class="share_title">
@@ -37,7 +48,9 @@
         <div class="link_head">hato/</div>
         <div class="link_tail">{{ linkInfo.linkId }}</div>
       </div>
-      <mat-icon svgIcon="close" class="icon"></mat-icon>
+      <button (click)="deleteLink(i, linkInfo)" class="no_btn">
+        <mat-icon svgIcon="close" class="icon"></mat-icon>
+      </button>
     </div>
     <div class="link_info">
       <div class="dead_time">< {{ linkInfo.expires }}</div>
@@ -52,7 +65,9 @@
   <div *ngFor="let userInfo of userList; let i = index" class="line">
     <div class="manage">
       <div class="name">{{ userInfo.name }}</div>
-      <mat-icon svgIcon="close" class="icon"></mat-icon>
+      <button (click)="deleteUser(i, userInfo)" class="no_btn">
+        <mat-icon svgIcon="close" class="icon"></mat-icon>
+      </button>
     </div>
     <div class="manage_info">
       <div class="email">{{ userInfo.email }}</div>
@@ -60,4 +75,3 @@
     </div>
   </div>
 </div>
-
