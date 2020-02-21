@@ -7,6 +7,7 @@ using System;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -197,6 +198,7 @@ namespace Karenia.TegamiHato.Server.Controllers
             }
         }
 
+
         public class SendMessageResult
         {
 
@@ -226,51 +228,62 @@ namespace Karenia.TegamiHato.Server.Controllers
         )
         {
             if (!Ulid.TryParse(id, out var _id)) return BadRequest();
-            // TODO: Can this be merged into one call?
 
-            var userId = Ulid.Parse(HttpContext.User.Claims.Where(claim => claim.Type == "sub")
-                   .Select(claim => claim.Value)
-                   .Single());
-            User userInfo = (await this._db.GetUser(userId))!;
-
-            var attachments = await this._db.GetAttachmentsFromIdAsync
-                (apiMessage.attachments.Select(id => Ulid.Parse(id))
-                .ToList());
-
-            Ulid msgId = Ulid.NewUlid();
-            var message = new HatoMessage()
+            try
             {
-                MsgId = msgId,
-                ChannelId = _id,
-                Title = apiMessage.title,
-                BodyHtml = apiMessage.bodyHtml,
-                BodyPlain = apiMessage.bodyPlain,
-                Attachments = attachments,
-                SenderEmail = userInfo.Email,
-                SenderNickname = userInfo.Nickname,
-                Tags = apiMessage.tags,
-            };
-            await this._db.SaveMessageIntoChannel(message, _id);
+                var userId = Ulid.Parse(HttpContext.User.Claims.Where(claim => claim.Type == "sub")
+                       .Select(claim => claim.Value)
+                       .Single());
+                User userInfo = (await this._db.GetUser(userId))!;
 
-            // HACK: Attachment are inserted directly!
-            // TODO: Change it into a single call
-            this._db.db.AttachmentRelations.AddRange(attachments.Select(att => new AttachmentMessageRelation()
+                var attachments = await this._db.GetAttachmentsFromIdAsync
+                    (apiMessage.attachments.Select(id => Ulid.Parse(id))
+                    .ToList());
+
+                Ulid msgId = Ulid.NewUlid();
+                var message = new HatoMessage()
+                {
+                    MsgId = msgId,
+                    ChannelId = _id,
+                    Title = apiMessage.title,
+                    BodyHtml = apiMessage.bodyHtml,
+                    BodyPlain = apiMessage.bodyPlain,
+                    Attachments = attachments,
+                    SenderEmail = userInfo.Email,
+                    SenderNickname = userInfo.Nickname,
+                    Tags = apiMessage.tags,
+                };
+                await this._db.SaveMessageIntoChannel(message, _id);
+
+                // HACK: Attachment are inserted directly!
+                // TODO: Change it into a single call
+                this._db.db.AttachmentRelations.AddRange(attachments.Select(att => new AttachmentMessageRelation()
+                {
+                    AttachmentId = att.AttachmentId,
+                    MsgId = msgId
+                }));
+                await this._db.db.SaveChangesAsync();
+
+                // Send message to channel
+                var channelEmails = await recvAdaptor.GetEmailsFromChannelIds(new[] { _id });
+                var failed = await recvAdaptor.SendEmail(message, channelEmails);
+
+                return Ok(new SendMessageResult()
+                {
+                    MsgId = msgId,
+                    timestamp = msgId.Time,
+                    FailedChannels = failed
+                });
+            }
+            catch (Exception e)
             {
-                AttachmentId = att.AttachmentId,
-                MsgId = msgId
-            }));
-            await this._db.db.SaveChangesAsync();
-
-            // Send message to channel
-            var channelEmails = await recvAdaptor.GetEmailsFromChannelIds(new[] { _id });
-            var failed = await recvAdaptor.SendEmail(message, channelEmails);
-
-            return Ok(new SendMessageResult()
-            {
-                MsgId = msgId,
-                timestamp = msgId.Time,
-                FailedChannels = failed
-            });
+                return StatusCode(
+                    StatusCodes.Status503ServiceUnavailable,
+                    new ErrorResult(
+                        "Failed to send message",
+                        "There's an error during processing of the message",
+                        e.ToString()));
+            }
         }
 
 

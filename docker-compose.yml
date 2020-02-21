@@ -4,20 +4,21 @@ services:
     image: hato/hato_server
     build: server/
     environment:
-      - hato_pgsql=Host=localhost;Database=server_pgsql;Port=5432;Username=postgres;Password=postgres
+      - hato_pgsql=Host=localhost;Database=server_pgsql;Port=5432;Username=postgres;Password=$postgres_password
     env_file: .env
-    # volumes:
-    #   - ./cert:s
+    volumes:
+      - cert_storage:./cert/
     links:
       - server_pgsql
     depends_on:
       - server_pgsql
     ports:
       - 80:80
+
   server_pgsql:
     image: hato/pgsql_jieba
     environment:
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=$postgres_password
     env_file: .env
     build:
       context: .
@@ -27,3 +28,5 @@ services:
 
 volumes:
   db_data:
+  cert_storage:
+    external: true

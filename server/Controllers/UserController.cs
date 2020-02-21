@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using FluentEmail.Core;
 using Karenia.TegamiHato.Server.Models;
 using Karenia.TegamiHato.Server.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Karenia.TegamiHato.Server.Controllers
@@ -15,15 +17,18 @@ namespace Karenia.TegamiHato.Server.Controllers
         public UserController(
             DatabaseService db,
             EmailSendingService send,
+             Microsoft.AspNetCore.Hosting.IWebHostEnvironment env,
             ILogger<UserController> logger)
         {
             this.db = db;
             this.send = send;
+            this.env = env;
             this.logger = logger;
         }
 
         private DatabaseService db;
         private readonly EmailSendingService send;
+        private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment env;
         private readonly ILogger<UserController> logger;
 
         [HttpPost]
@@ -31,10 +36,18 @@ namespace Karenia.TegamiHato.Server.Controllers
         public async Task<IActionResult> RequestLoginCode(string email)
         {
             var code = UserLoginCode.Generate(DateTimeOffset.Now);
+            var emailResult = await SendLoginCodeAsync(email, code.Code);
+
+            if (!emailResult.Successful)
+                return StatusCode(
+                    StatusCodes.Status503ServiceUnavailable,
+                    new ErrorResult("Email service unavailable"));
+
             var result = await db.GenerateLoginCodeOrAddUser(email, code);
 
-            this.logger.LogInformation($"Added login code '{code.Code}' for {email}");
-            await SendLoginCodeAsync(email, code.Code);
+            if (env.IsDevelopment())
+                logger.LogInformation($"Added login code '{code.Code}' for {email}");
+
             if (result.Item1) this.logger.LogInformation($"Added user");
 
             return Ok(new
@@ -44,7 +57,7 @@ namespace Karenia.TegamiHato.Server.Controllers
             });
         }
 
-        private async Task SendLoginCodeAsync(string receiver, string code)
+        private async Task<FluentEmail.Core.Models.SendResponse> SendLoginCodeAsync(string receiver, string code)
         {
             var email = new Email(string.Format(
                 "code-noreply@{0}",
@@ -92,7 +105,7 @@ If you haven't requested a login, please ignore or delete this email. The code e
 Tegami Hato: A Simple information broadcasting tool.
             ", code));
 
-            await send.SendEmail(email);
+            return await send.SendEmail(email);
         }
     }
 }

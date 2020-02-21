@@ -41,7 +41,6 @@ namespace Karenia.TegamiHato.Server
 
             services.AddDistributedMemoryCache();
 
-            var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2("../cert/ca.pfx", "hato_server");
 
             var pgsqlLinkParams = Environment.GetEnvironmentVariable("hato_pgsql");
             // * Database
@@ -55,7 +54,7 @@ namespace Karenia.TegamiHato.Server
             );
             {
                 var db = services.BuildServiceProvider().GetService<Models.EmailSystemContext>();
-                // db.Database.Migrate();
+                db.Database.Migrate();
             }
 
             services.AddScoped<DatabaseService>();
@@ -108,21 +107,38 @@ namespace Karenia.TegamiHato.Server
                     services.AddSingleton<ObjectStorageService>(srv => new ObjectStorageService(domain, key, secret, spaceName));
             }
 
-            services.AddIdentityServer(opt =>
+            var identityServer = services.AddIdentityServer(opt =>
+              {
+                  opt.Events.RaiseErrorEvents = true;
+                  opt.Events.RaiseFailureEvents = true;
+                  opt.UserInteraction.LoginUrl = null;
+                  opt.UserInteraction.LogoutUrl = null;
+              })
+                .AddInMemoryClients(IdentityConstants.clients)
+                .AddInMemoryCaching()
+                //    .AddPersistedGrantStore()
+                .AddInMemoryApiResources(IdentityConstants.apiResources)
+                .AddResourceOwnerValidator<UserIdentityService>()
+                .AddJwtBearerClientAuthentication();
+
+
+            if (Environment.GetEnvironmentVariable("hato_use_devel_sign") == null)
             {
-                opt.Events.RaiseErrorEvents = true;
-                opt.Events.RaiseFailureEvents = true;
-                opt.UserInteraction.LoginUrl = null;
-                opt.UserInteraction.LogoutUrl = null;
-            })
-               .AddInMemoryClients(IdentityConstants.clients)
-               .AddInMemoryCaching()
-            //    .AddPersistedGrantStore()
-               .AddInMemoryApiResources(IdentityConstants.apiResources)
-               .AddResourceOwnerValidator<UserIdentityService>()
-               .AddSigningCredential(cert, "RS256")
-            //    .AddDeveloperSigningCredential()
-               .AddJwtBearerClientAuthentication();
+                var cert_filename = Environment.GetEnvironmentVariable("cert_name");
+                var cert_password = Environment.GetEnvironmentVariable("cert_password");
+                if (cert_filename == null || cert_password == null)
+                {
+                    // first let's get pass building phase
+                    identityServer.AddDeveloperSigningCredential();
+                    pendingLogs.Add((LogLevel.Error, "Certificate not provided! please provide certificate path as 'cert_path' and certificate password as 'cert_password'!"));
+                }
+                var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2($"{cert_filename}", cert_password);
+                identityServer.AddSigningCredential(cert, "RS256");
+            }
+            else
+            {
+                identityServer.AddDeveloperSigningCredential();
+            }
 
             services.AddAuthorization(option =>
             {
