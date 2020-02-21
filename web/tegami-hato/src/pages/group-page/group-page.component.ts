@@ -39,7 +39,7 @@ export class GroupPageComponent implements OnInit {
   }
 
   clickNew(){
-    this.showNew = !this.showNew;
+    this.showNew = true;
   }
 
   ulidTime(id: string): number {
