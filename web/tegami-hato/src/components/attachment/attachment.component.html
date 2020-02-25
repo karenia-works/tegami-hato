@@ -1,0 +1,13 @@
+<a class="attachment" 
+    [href]="attachment.url"
+    [title]="attachment.filename">
+    <mat-icon svgIcon="file-outline"></mat-icon>
+    <div class="info">
+        <div class="filename">
+            {{attachment.filename}}
+        </div>
+        <div class="size">
+            {{fileSize(attachment.size)}}
+        </div>
+    </div>
+</a>
