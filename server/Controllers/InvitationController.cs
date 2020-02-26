@@ -62,7 +62,7 @@ namespace Karenia.TegamiHato.Server.Controllers
             }
             else
             {
-                return BadRequest(new ErrorResult("No such invitation"));
+                return NotFound(new ErrorResult("No such invitation"));
             }
         }
 
@@ -70,8 +70,14 @@ namespace Karenia.TegamiHato.Server.Controllers
         [Route("{linkId}")]
         public async Task<IActionResult> GetInvitationLink(string linkId)
         {
-            // TODO: report the user with basic information about the link
-            throw new NotImplementedException();
+            var link = await db.GetInvitationLink(linkId);
+            if (link == null) return NotFound();
+            var channel = await db.GetChannel(link.ChannelId);
+            return Ok(new
+            {
+                link,
+                channel
+            });
         }
     }
 }

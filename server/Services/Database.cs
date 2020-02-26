@@ -137,6 +137,66 @@ namespace Karenia.TegamiHato.Server.Services
                 .SingleOrDefaultAsync(ch => ch.ChannelId == channelId);
         }
 
+        public async Task<IList<Ulid>> FilterUserFollowedChannel(Ulid userId, ICollection<Ulid> src)
+        {
+            return await db.ChannelUserTable.AsQueryable()
+                .Where(entry => entry.UserId == userId && src.Contains(entry.ChannelId))
+                .Select(entry => entry.ChannelId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Get messages from channel.
+        /// 
+        /// <para>
+        ///     To get message from the very start, set <code>start</code> as <code>Ulid.MinValue</code>. Same for the very end.
+        /// </para>
+        /// </summary>
+        /// <param name="channelId">Channel ID</param>
+        /// <param name="start">Start ID of message (excluding)</param>
+        /// <param name="count">Count of message, defaults to 20</param>
+        /// <param name="ascending">Whether to get messages in time ascending order; default to false</param>
+        /// <returns></returns>
+        public async Task<IList<HatoMessage>> GetMessageFromChannelsAsync(ICollection<Ulid> channelIds, Ulid start, int count = 20, bool ascending = false)
+        {
+            if (count > MaxResultPerQuery)
+                throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
+
+            var partial = db.Messages.AsQueryable();
+
+            if (ascending)
+                partial = partial.Where(
+                        message =>
+                            channelIds.Contains(message.ChannelId)
+                            && (message.MsgId.CompareTo(start) > 0));
+            else
+                partial = partial.Where(
+                        message =>
+                            channelIds.Contains(message.ChannelId)
+                            && (message.MsgId.CompareTo(start) < 0));
+
+            if (ascending)
+                partial = partial.OrderBy(message => message.MsgId);
+            else
+                partial = partial.OrderByDescending(message => message.MsgId);
+
+            partial = partial
+                .Include(msg => msg.LinkedAttachments).ThenInclude(att => att.Attachment);
+            partial = partial.Take(count);
+
+            var msgs = await partial.ToListAsync();
+            msgs.ForEach(
+                p =>
+                {
+                    p.Attachments = p.LinkedAttachments
+                        .Select(rel => rel.Attachment)
+                        .ToList();
+                    foreach (var att in p.Attachments) { att.LinkedMessages = null; }
+                    p.LinkedAttachments = null;
+                });
+            return msgs;
+        }
+
         /// <summary>
         /// Get messages from channel.
         /// 
@@ -275,6 +335,7 @@ namespace Karenia.TegamiHato.Server.Services
                 .SingleOrDefaultAsync(
                     link => link.LinkId == linkId);
         }
+
         public async Task<InvitationLink?> GetInvitationLink(
             Ulid channelId,
             string linkId
