@@ -3,8 +3,8 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
-import { NavbarComponent } from "../components/navbar/navbar.component";
-import { FooterComponent } from "../components/footer/footer.component";
+import { NavbarComponent } from '../components/navbar/navbar.component';
+import { FooterComponent } from '../components/footer/footer.component';
 
 // mdi
 import { MatIconRegistry, MatIconModule } from '@angular/material/icon';
@@ -15,7 +15,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 @NgModule({
   declarations: [
     AppComponent,
-    NavbarComponent, 
+    NavbarComponent,
     FooterComponent
   ],
   imports: [

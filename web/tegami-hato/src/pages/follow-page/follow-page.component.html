@@ -6,13 +6,13 @@
   </div>
   <div class="list">
     <div *ngFor="let chl of channels" 
-          class="channel card"
+          class="card"
           [routerLink]="['/channel', chl.channelId]">
       <div class="channel-info">
         <span class="title">{{chl.channelTitle}}</span>
-        <span class="time">{{getTime(chl.msgId)}}</span>
+        <span class="time info">{{getTime(chl.msgId)}}</span>
       </div>
-      <span class="message">
+      <span class="message info">
         <span class="sender">{{chl.senderNickname}}：</span>
         {{chl.title}}
       </span>
