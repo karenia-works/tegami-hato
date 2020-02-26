@@ -1,0 +1,67 @@
+.card {
+    margin-bottom: var(--theme-pad-03);
+}
+
+.close {
+    .abstract {
+        margin-top: var(--theme-pad-03);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .sender {
+        color: var(--theme-link-color);
+    }
+}
+
+.open {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    .info {
+        display: flex;
+        flex-direction: row;
+        margin: var(--theme-pad-03) 0;
+
+        .sender {
+            margin-right: var(--theme-pad-03);
+        }
+    }
+
+    .content {
+        font-size: var(--theme-size-large);
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+
+    .attachments {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 16px 0 -16px;
+
+        .attachment {
+            max-width: 300px;
+            margin-right: 16px;
+            margin-bottom: 16px;
+        }
+    }
+}
+
+:host /deep/ a {
+    color: var(--theme-link-color);
+    transition: all 150ms ease-in-out;
+
+    &:hover {
+        color: var(--theme-link-hover-color);
+    }
+}
+
+:host /deep/ p {
+    margin: 0;
+    text-align: justify;
+}

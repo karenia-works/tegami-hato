@@ -3,7 +3,7 @@ export const recentMessages = [
         channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
         channelTitle: '1721 大班通知',
         msgId: '01E1GKAN6GZ595N2DEP0E515JY',
-        bodyPlain: 'https://docs.qq.com/form/fill/DWUNDeFR3TklsblRK?_w_tencentdocx_form=1\n			需要补选课程的同学请填写问卷并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。',
+        bodyPlain: 'https://docs.qq.com/form/fill/DWUNDeFR3TklsblRK?_w_tencentdocx_form=1 			需要补选课程的同学请填写问卷并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。',
         title: '软件学院2020年春季学期本科生补选课程选课申请表',
         senderNickname : '费心怡',
         senderEmail : 'fxy@buaa.edu.cn'
@@ -36,9 +36,26 @@ export const channelMessages = [
         senderEmail: '1261782580@qq.com',
         senderNickname: '费心怡',
         title: '软件学院2020年春季学期本科生补选课程选课申请表',
-        bodyPlain: 'https://docs.qq.com/form/fill/DWUNDeFR3TklsblRK?_w_tencentdocx_form=1\n需要补选课程的同学请填写问卷并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。',
-        bodyHtml: '',
-        attachments: [],
+        bodyPlain: '需要补选课程的同学请填写问卷并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。',
+        bodyHtml: '<p>需要补选课程的同学请填写<a href=\'https://docs.qq.com/form/fill/DWUNDeFR3TklsblRK?_w_tencentdocx_form=1\'>问卷</a>并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。</p>',
+        attachments: [
+          {
+            attachmentId: '01E1BWRVGEV4XD68NJVERG2ZXV',
+            filename: 'Konachan.com - 299935 2980 bow close gradient gray_hair higuchi_kaede long_hair nijisanji ponytail purple_eyes school_uniform tie waifu2x(RGB)(noise_scale)(Level1)(height 2560).png',
+            url: 'https://karenia-space-nano.sfo2.digitaloceanspaces.com/att/Konachan.com%20-%20299935%202980%20bow%20close%20gradient%20gray_hair%20higuchi_kaede%20long_hair%20nijisanji%20ponytail%20purple_eyes%20school_uniform%20tie%20waifu2x(RGB)(noise_scale)(Level1)(height%202560)_01E1BWRVGEV4XD68NJVERG2ZXV.png',
+            contentType: 'image/jpeg',
+            size: 3012528,
+            isAvailable: true
+          },
+          {
+            attachmentId: '01E1BWRVGEV4XD68NJVERG2ZXV',
+            filename: 'Konachan.com.png',
+            url: 'https://karenia-space-nano.sfo2.digitaloceanspaces.com/att/Konachan.com%20-%20299935%202980%20bow%20close%20gradient%20gray_hair%20higuchi_kaede%20long_hair%20nijisanji%20ponytail%20purple_eyes%20school_uniform%20tie%20waifu2x(RGB)(noise_scale)(Level1)(height%202560)_01E1BWRVGEV4XD68NJVERG2ZXV.png',
+            contentType: 'image/jpeg',
+            size: 3012528,
+            isAvailable: true
+          }
+        ],
         tags: [],
     },
     {
@@ -48,8 +65,8 @@ export const channelMessages = [
         senderEmail: '847590417@qq.com',
         senderNickname: '王宇轩',
         title: '创新杯云答辩材料提交',
-        bodyPlain: '创新杯“云答辩”活动进入互评期了，时间安排如下：\n参加的小组需要在互评前后提交两次材料，分别是2月20日（用于同学互评）和3月1日前（用于“专业”评委评分），综合两次评价得出最终排名\n材料内容即之前提到的如下内容：\n1. 预答辩PPT\n2. “终审”答辩视频（推荐不超过五分钟，即模拟现场答辩全面介绍项目的视频）\n3. 其他说明材料（可选，例如项目演示视频、宣传视频等）\n所有材料需打包为压缩包后提交到以下邮箱的任一个：847590417@qq.com, 17373449@buaa.edu.cn\n压缩包和邮件主题格式均为\n一作名称_作品名称_第一次材料提交\n注:\n1. 本次仅为创新杯预终审，真终审时间待定\n2. 活动奖品丰厚，欢迎大家积极报名嗷',
-        bodyHtml: '',
+        bodyPlain: '创新杯“云答辩”活动进入互评期了，时间安排如下： 参加的小组需要在互评前后提交两次材料，分别是2月20日（用于同学互评）和3月1日前（用于“专业”评委评分），综合两次评价得出最终排名 材料内容即之前提到的如下内容： 1. 预答辩PPT 2. “终审”答辩视频（推荐不超过五分钟，即模拟现场答辩全面介绍项目的视频） 3. 其他说明材料（可选，例如项目演示视频、宣传视频等） 所有材料需打包为压缩包后提交到以下邮箱的任一个：847590417@qq.com, 17373449@buaa.edu.cn 压缩包和邮件主题格式均为 一作名称_作品名称_第一次材料提交 注: 1. 本次仅为创新杯预终审，真终审时间待定 2. 活动奖品丰厚，欢迎大家积极报名嗷',
+        bodyHtml: '<p>参加的小组需要在互评前后提交两次材料，分别是2月20日（用于同学互评）和3月1日前（用于“专业”评委评分），综合两次评价得出最终排名</p> <p>材料内容即之前提到的如下内容：</p> <p>1. 预答辩PPT</p> <p>2. “终审”答辩视频（推荐不超过五分钟，即模拟现场答辩全面介绍项目的视频）</p> <p>3. 其他说明材料（可选，例如项目演示视频、宣传视频等）</p> <p>所有材料需打包为压缩包后提交到以下邮箱的任一个：847590417@qq.com, 17373449@buaa.edu.cn</p> <p>压缩包和邮件主题格式均为</p> <p>一作名称_作品名称_第一次材料提交</p> <p>注:</p> <p>1. 本次仅为创新杯预终审，真终审时间待定</p> <p>2. 活动奖品丰厚，欢迎大家积极报名嗷</p>',
         attachments: [],
         tags: [],
     },
@@ -60,8 +77,8 @@ export const channelMessages = [
         senderEmail: 'sywang1207@gmail.com',
         senderNickname: '朱辉',
         title: '本科生在线学习信息统计',
-        bodyPlain: '请各位同学及时填写统计问卷，https://www.wjx.top/m/56907020.aspx，用于之后线上教学，截止时间：2.12晚上21:00。填写请注意：\n1.QQ用于关联腾讯课堂；\n2.年级不要填写错误；\n3.邮箱请填写北航邮箱；\n谢谢配合，顺祝平安~',
-        bodyHtml: '',
+        bodyPlain: '请各位同学及时填写统计问卷，用于之后线上教学，截止时间：2.12晚上21:00。填写请注意：1.QQ用于关联腾讯课堂；2.年级不要填写错误；3.邮箱请填写北航邮箱；谢谢配合，顺祝平安~',
+        bodyHtml: '<p>请各位同学及时填写<a href=\'https://www.wjx.top/m/56907020.aspx\'>统计问卷</a>，用于之后线上教学，截止时间：2.12晚上21:00。填写请注意：</p> <p>1.QQ用于关联腾讯课堂；</p> <p>2.年级不要填写错误；</p> <p>3.邮箱请填写北航邮箱；</p> <p>谢谢配合，顺祝平安~</p>',
         attachments: [],
         tags: [],
     }];

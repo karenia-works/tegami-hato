@@ -1,0 +1,47 @@
+<div class="info">
+  <div
+    *ngFor="let notice of list; let i = index"
+    class="card"
+    (click)="clickToOpen(i)"
+  >
+    <div *ngIf="showThis == i; then Open; else Close" (click)="(false)"></div>
+
+    <ng-template #Close>
+      <div class="close">
+        <div class="title">
+          {{ notice.title }}
+        </div>
+        <div class="abstract info">
+          <span class="sender"> {{ notice.senderNickname }}： </span>
+          {{ notice.bodyPlain }}
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template #Open>
+      <div class="open">
+        <div class="title">
+          {{ notice.title }}
+        </div>
+
+        <div class="info">
+          <div class="sender">
+            {{ notice.senderNickname }} &lt; {{ notice.senderEmail }} &gt;
+          </div>
+          <div class="time">
+            {{ ulidTime(notice.msgId) | date: "yyyy/MM/dd H:mm" }}
+          </div>
+        </div>
+
+        <div class="content" [innerHTML]="notice.bodyHtml">
+          {{ notice.bodyHtml }}
+        </div>
+        <div class="attachments">
+          <div *ngFor="let att of notice.attachments" class="attachment">
+            <app-attachment [attachment]="att"></app-attachment>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>
