@@ -12,7 +12,8 @@ import { SettingPageModule } from "src/pages/setting-page/setting-page.module";
 import { SettingPageComponent } from "src/pages/setting-page/setting-page.component";
 import { MePageModule } from "src/pages/me-page/me-page.module";
 import { MePageComponent } from "src/pages/me-page/me-page.component";
-
+import { InvitePageModule } from "src/pages/invite-page/invite-page.module";
+import { InvitePageComponent } from "src/pages/invite-page/invite-page.component";
 
 const routes: Routes = [
   {
@@ -22,6 +23,10 @@ const routes: Routes = [
   {
     path: "follow",
     component: FollowPageComponent
+  },
+  {
+    path: "invite",
+    component: InvitePageComponent
   },
   {
     path: "channel/:channelId",
@@ -46,10 +51,11 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     MainPageModule,
     GroupPageModule,
-    FollowPageModule, 
+    FollowPageModule,
     LoginPageModule,
     SettingPageModule,
-    MePageModule
+    MePageModule,
+    InvitePageModule
   ],
   exports: [RouterModule]
 })
