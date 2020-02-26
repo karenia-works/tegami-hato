@@ -71,13 +71,13 @@ namespace Karenia.TegamiHato.Server.Models
 
         public string? Title { get; set; }
 
-        public string BodyPlain { get; set; }
     }
 
     public class HatoMessage : HatoMessageAbbr
     {
 
-        public string? BodyHtml { get; set; }
+        public string? BodyPlain { get; set; }
+        public string BodyHtml { get; set; }
 
         [JsonIgnore]
         public virtual ICollection<AttachmentMessageRelation> LinkedAttachments { get; set; }
