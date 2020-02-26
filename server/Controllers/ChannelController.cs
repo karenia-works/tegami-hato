@@ -83,6 +83,36 @@ namespace Karenia.TegamiHato.Server.Controllers
                 return BadRequest(e);
             }
         }
+
+        [HttpGet]
+        [Route("many")]
+        [Authorize("api")]
+        public async Task<IActionResult> GetMultipleChannelMessages(
+            [FromQuery] List<string> channelIds,
+            [FromQuery] string start,
+            [FromQuery] int count = 20,
+            [FromQuery] bool ascending = false
+        )
+        {
+            List<Ulid> channelUlids;
+            List<string> failedUlids;
+            {
+                var channelUlidIntermediate = channelIds.Select(channelId =>
+               {
+                   var res = Ulid.TryParse(channelId, out var ulid);
+                   return (res, ulid, channelId);
+               }).GroupBy(entry => entry.res).ToDictionary(group => group.Key);
+                channelUlids = channelUlidIntermediate[true].Select(entry => entry.ulid).ToList();
+                failedUlids = channelUlidIntermediate[false].Select(entry => entry.channelId).ToList();
+            }
+
+            if (!Ulid.TryParse(start, out var startId))
+                return BadRequest();
+
+            var res = await db.GetMessageFromChannelsAsync(channelUlids, startId, count, ascending);
+
+            return Ok(res);
+        }
     }
 
     [ApiController]

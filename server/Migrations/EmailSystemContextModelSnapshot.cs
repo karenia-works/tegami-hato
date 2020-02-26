@@ -21,7 +21,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                 .HasAnnotation("ProductVersion", "3.1.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.AttachmentMessageRelation", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.AttachmentMessageRelation", b =>
                 {
                     b.Property<Guid>("AttachmentId")
                         .HasColumnName("attachment_id")
@@ -46,7 +46,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.ToTable("attachment_relations");
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.ChannelUserRelation", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.ChannelUserRelation", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnName("user_id")
@@ -83,7 +83,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.ToTable("channel_user_table");
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoAttachment", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.HatoAttachment", b =>
                 {
                     b.Property<Guid>("AttachmentId")
                         .HasColumnName("attachment_id")
@@ -121,7 +121,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.ToTable("attachments");
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoChannel", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.HatoChannel", b =>
                 {
                     b.Property<Guid>("ChannelId")
                         .HasColumnName("channel_id")
@@ -157,7 +157,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.ToTable("channels");
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoMessage", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.HatoMessage", b =>
                 {
                     b.Property<Guid>("MsgId")
                         .HasColumnName("msg_id")
@@ -214,7 +214,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.ToTable("messages");
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.InvitationLink", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.InvitationLink", b =>
                 {
                     b.Property<string>("LinkId")
                         .HasColumnName("link_id")
@@ -244,7 +244,7 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.ToTable("invitation_links");
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.User", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.User", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnName("user_id")
@@ -274,16 +274,16 @@ namespace Karenia.TegamiHato.Server.Migrations
                     b.ToTable("users");
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.AttachmentMessageRelation", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.AttachmentMessageRelation", b =>
                 {
-                    b.HasOne("Karenia.TegamiHato.Server.Models.HatoAttachment", "Attachment")
+                    b.HasOne("Karenia.TegamiHato.Server.Helpers.HatoAttachment", "Attachment")
                         .WithMany("LinkedMessages")
                         .HasForeignKey("AttachmentId")
                         .HasConstraintName("fk_attachment_relations_attachments_attachment_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Karenia.TegamiHato.Server.Models.HatoMessage", "Message")
+                    b.HasOne("Karenia.TegamiHato.Server.Helpers.HatoMessage", "Message")
                         .WithMany("LinkedAttachments")
                         .HasForeignKey("MsgId")
                         .HasConstraintName("fk_attachment_relations_messages_msg_id")
@@ -291,16 +291,16 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.ChannelUserRelation", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.ChannelUserRelation", b =>
                 {
-                    b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", "_Channel")
+                    b.HasOne("Karenia.TegamiHato.Server.Helpers.HatoChannel", "_Channel")
                         .WithMany("_Users")
                         .HasForeignKey("ChannelId")
                         .HasConstraintName("fk_channel_user_table_channels_channel_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Karenia.TegamiHato.Server.Models.User", "_User")
+                    b.HasOne("Karenia.TegamiHato.Server.Helpers.User", "_User")
                         .WithMany("_Channels")
                         .HasForeignKey("UserId")
                         .HasConstraintName("fk_channel_user_table_users_user_id")
@@ -308,9 +308,9 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.HatoMessage", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.HatoMessage", b =>
                 {
-                    b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", "_Channel")
+                    b.HasOne("Karenia.TegamiHato.Server.Helpers.HatoChannel", "_Channel")
                         .WithMany("_Messages")
                         .HasForeignKey("ChannelId")
                         .HasConstraintName("fk_messages_channels_channel_id")
@@ -318,9 +318,9 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.InvitationLink", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.InvitationLink", b =>
                 {
-                    b.HasOne("Karenia.TegamiHato.Server.Models.HatoChannel", null)
+                    b.HasOne("Karenia.TegamiHato.Server.Helpers.HatoChannel", null)
                         .WithMany("_InvitationLinks")
                         .HasForeignKey("ChannelId")
                         .HasConstraintName("fk_invitation_links_channels_channel_id")
@@ -328,9 +328,9 @@ namespace Karenia.TegamiHato.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Karenia.TegamiHato.Server.Models.User", b =>
+            modelBuilder.Entity("Karenia.TegamiHato.Server.Helpers.User", b =>
                 {
-                    b.OwnsMany("Karenia.TegamiHato.Server.Models.UserLoginCode", "_LoginCodes", b1 =>
+                    b.OwnsMany("Karenia.TegamiHato.Server.Helpers.UserLoginCode", "_LoginCodes", b1 =>
                         {
                             b1.Property<Guid>("CodeId")
                                 .HasColumnName("code_id")

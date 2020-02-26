@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Razor;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -17,7 +18,7 @@ namespace Karenia.TegamiHato.Server.Controllers
         public UserController(
             DatabaseService db,
             EmailSendingService send,
-             Microsoft.AspNetCore.Hosting.IWebHostEnvironment env,
+            Microsoft.AspNetCore.Hosting.IWebHostEnvironment env,
             ILogger<UserController> logger)
         {
             this.db = db;
@@ -36,7 +37,11 @@ namespace Karenia.TegamiHato.Server.Controllers
         public async Task<IActionResult> RequestLoginCode(string email)
         {
             var code = UserLoginCode.Generate(DateTimeOffset.Now);
-            var emailResult = await SendLoginCodeAsync(email, code.Code);
+            var user = await db.GetUserFromEmail(email);
+            var emailResult = await SendLoginCodeAsync(
+                email,
+                user?.Nickname ?? email,
+                code.Code);
 
             if (!emailResult.Successful)
                 return StatusCode(
@@ -57,53 +62,16 @@ namespace Karenia.TegamiHato.Server.Controllers
             });
         }
 
-        private async Task<FluentEmail.Core.Models.SendResponse> SendLoginCodeAsync(string receiver, string code)
+        private async Task<FluentEmail.Core.Models.SendResponse> SendLoginCodeAsync(string receiver, string nickname, string code)
         {
             var email = new Email(string.Format(
                 "code-noreply@{0}",
                 send.Domain), "Hato Code Bot")
             .To(receiver)
             .Subject($"Your login code is \"{code}\"")
-            .Body(string.Format(@"
-<h1> Login </h1>
-<p>
-    Hi, we've seen you trying to log in in just now. Here's your login code:
-    <br/>
-    <pre class=""login - code""> {0} </pre>
-</p>
-<p>
-  If you haven't requested a login, please ignore or delete this email. The code expires in 15 minutes.
-</p>
-<sub>
-  <b> Tegami Hato </b>: A Simple information broadcasting tool.
-</sub>
-<style>
-body {{
-  font-family: 'Source Han Sans CN', 'Sarasa UI SC', 'Noto Sans', 'San Fransisco', 'Segoe UI', 'Roboto, 'Noto Sans CJK SC', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft Yahei UI', sans-serif;
-}}
-.login-code{{
-  font-family: 'Iosevka', 'IBM Plex Mono', 'Consolas', 'SF Mono', 'Roboto Mono', monospace;
-  font-size: 2em;
-  padding: 0.5em;
-  text-align: center;
-  background-color: #88888844;
-  border-radius: 0.2em;
-  max-width: 12em;
-}}
-</style>
-            ", code), true)
-            .PlaintextAlternativeBody(string.Format(@"
-##   Login   ##
-
-Hi, we've seen you trying to log in in just now. Here's your login code:
-
-    >>>> {0} <<<<
-
-If you haven't requested a login, please ignore or delete this email. The code expires in 15 minutes.
-
----
-Tegami Hato: A Simple information broadcasting tool.
-            ", code));
+            .Body(Views.LoginCodeTemplate.compiledTemplate(new { nickname, code }), true)
+            .PlaintextAlternativeBody(Views.LoginCodeTemplate.compiledTemplatePlaintext(new { nickname, code }))
+            ;
 
             return await send.SendEmail(email);
         }

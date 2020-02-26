@@ -4,6 +4,7 @@ using Karenia.TegamiHato.Server.Services;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -26,19 +27,28 @@ namespace Karenia.TegamiHato.Server.Controllers
             this.send = send;
         }
 
+        public const long MaxAllowedUploadSize = (long)(2.5 * 1024 * 1024 * 1024);
+
         [HttpPost]
         [Route("upload")]
         public async Task<IActionResult> UploadAttachment(
-            // [FromBody] Stream fileStream,
-            [FromQuery] string filename,
-            [FromHeader(Name = "Content-Length")] long contentLength,
-            [FromHeader(Name = "Content-Type")] string? contentType)
+            [FromQuery] string filename
+        )
         {
-            var fileStream = Request.Body;
+            var _contentLength = Request.ContentLength;
+            if (_contentLength == null)
+                return StatusCode(StatusCodes.Status411LengthRequired);
+            if (_contentLength > MaxAllowedUploadSize)
+                return StatusCode(StatusCodes.Status413PayloadTooLarge);
+            long contentLength = _contentLength.Value;
+
+            var contentType = Request.ContentType;
             if (contentType == null)
             {
                 contentType = MimeTypes.GetMimeType(filename);
             }
+
+            var fileStream = Request.Body;
             Ulid id = Ulid.NewUlid();
             var path = await this.oss.PutAttachment(id, filename, fileStream, contentLength, contentType);
 
