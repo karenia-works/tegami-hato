@@ -1,0 +1,30 @@
+<div class="container">
+  <h1>设置</h1>
+  <h3 class="h3">邮箱</h3>
+  <div class="line">
+    <input
+      name="search_box"
+      id="search_box"
+      type="text"
+      class="search-box textbox"
+      [value]="changedEmail"
+      (input)="changedEmail = $event.target.value"
+      [placeholder]="email"
+    />
+    <button class="btn-light" (click)="changeEmail()">更换邮箱</button>
+  </div>
+  <h3 class="h3">昵称</h3>
+  <div class="line">
+    <input
+      name="search_box"
+      id="search_box"
+      type="text"
+      class="search-box textbox"
+      [value]="changedName"
+      (input)="changedName = $event.target.value"
+      [placeholder]="name"
+    />
+    <button class="btn-light" (click)="changeName()">修改昵称</button>
+  </div>
+  <h3 class="h3">通知</h3>
+</div>
