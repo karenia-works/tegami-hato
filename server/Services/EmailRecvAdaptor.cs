@@ -36,7 +36,6 @@ namespace Karenia.TegamiHato.Server.Services
         private readonly ObjectStorageService oss;
         private readonly DatabaseService db;
         private readonly ILogger logger;
-
         private HttpClient client = new HttpClient();
 
         public const int maxBodyLength = 300;
@@ -225,6 +224,7 @@ namespace Karenia.TegamiHato.Server.Services
             return await req.Content.ReadAsStreamAsync();
         }
 
+        public const int MaxTotalAttachmentSize = 33 * 1024 * 1024;
 
         /// <summary>
         /// Send email to target channels

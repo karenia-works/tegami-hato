@@ -189,8 +189,6 @@ namespace Karenia.TegamiHato.Server.Services
         public class AttachmentNotFoundException : ChannelSendFailedException
         {
         }
-
-
     }
 
     public class EmailRecvEvent

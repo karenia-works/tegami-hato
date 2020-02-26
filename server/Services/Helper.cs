@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System;
+using HandlebarsDotNet;
 
 namespace Karenia.TegamiHato.Server.Models
 {
@@ -33,8 +34,11 @@ namespace Karenia.TegamiHato.Server.Models
         }
     }
 
-    // public class UlidTypeConverter : typecon
-    // {
-
-    // }
+    public struct PlainTextEncoder : HandlebarsDotNet.ITextEncoder
+    {
+        public string Encode(string value)
+        {
+            return value;
+        }
+    }
 }
