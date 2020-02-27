@@ -85,10 +85,10 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpGet]
-        [Route("many")]
+        [Route("many/message")]
         [Authorize("api")]
         public async Task<IActionResult> GetMultipleChannelMessages(
-            [FromQuery] List<string> channelIds,
+            [FromQuery(Name = "channelId")] List<string> channelIds,
             [FromQuery] string start,
             [FromQuery] int count = 20,
             [FromQuery] bool ascending = false
@@ -109,7 +109,12 @@ namespace Karenia.TegamiHato.Server.Controllers
             if (!Ulid.TryParse(start, out var startId))
                 return BadRequest();
 
-            var res = await db.GetMessageFromChannelsAsync(channelUlids, startId, count, ascending);
+            var res = await db.GetMessageFromChannelsAsync(
+                channelUlids,
+                startId,
+                count,
+                ascending,
+                includeChannelName: true);
 
             return Ok(res);
         }
