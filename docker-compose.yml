@@ -1,5 +1,18 @@
 version: "3.7"
 services:
+  caddy:
+    image: hectormolinero/caddy2
+    volumes:
+      - type: volume
+        source: caddyfile
+        target: /tmp/caddyfile
+        read_only: true
+    entrypoint: caddy run --config /tmp/caddyfile/Caddyfile
+    networks:
+      - default
+    depends_on:
+      - hato_server
+
   hato_server:
     image: hato/hato_server
     build: server/
@@ -7,13 +20,16 @@ services:
       - hato_pgsql=Host=localhost;Database=server_pgsql;Port=5432;Username=postgres;Password=$postgres_password
     env_file: .env
     volumes:
-      - cert_storage:./cert/
-    links:
-      - server_pgsql
+      - type: volume
+        source: cert_storage
+        target: ./cert
+        read_only: true
     depends_on:
       - server_pgsql
     ports:
       - 80:80
+    networks:
+      - default
 
   server_pgsql:
     image: hato/pgsql_jieba
@@ -25,8 +41,15 @@ services:
       dockerfile: pgsql-jieba.Dockerfile
     volumes:
       - "db_data:/var/lib/postgresql/data"
+    networks:
+      - default
 
 volumes:
   db_data:
   cert_storage:
     external: true
+  caddyfile:
+    external: true
+
+networks:
+  default:
