@@ -16,6 +16,8 @@ import { InvitePageModule } from "src/pages/invite-page/invite-page.module";
 import { InvitePageComponent } from "src/pages/invite-page/invite-page.component";
 import { PersonalSettingPageModule } from "src/pages/personal-setting-page/personal-setting-page.module";
 import { PersonalSettingPageComponent } from "src/pages/personal-setting-page/personal-setting-page.component";
+import { SharePageModule } from "src/pages/share-page/share-page.module";
+import { SharePageComponent } from "src/pages/share-page/share-page.component";
 
 const routes: Routes = [
   {
@@ -37,6 +39,10 @@ const routes: Routes = [
   {
     path: "channel/:channelId/setting",
     component: SettingPageComponent
+  },
+  {
+    path: "channel/:channelId/share",
+    component: SharePageComponent
   },
   {
     path: "login",
@@ -62,7 +68,8 @@ const routes: Routes = [
     SettingPageModule,
     MePageModule,
     InvitePageModule,
-    PersonalSettingPageModule 
+    PersonalSettingPageModule,
+    SharePageModule
   ],
   exports: [RouterModule]
 })
