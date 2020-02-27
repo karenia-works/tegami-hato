@@ -3,8 +3,8 @@ services:
   caddy:
     image: hectormolinero/caddy2
     volumes:
-      - type: volume
-        source: caddyfile
+      - type: bind
+        source: ./caddy
         target: /tmp/caddyfile
         read_only: true
     entrypoint: caddy run --config /tmp/caddyfile/Caddyfile
@@ -20,8 +20,8 @@ services:
       - hato_pgsql=Host=localhost;Database=server_pgsql;Port=5432;Username=postgres;Password=$postgres_password
     env_file: .env
     volumes:
-      - type: volume
-        source: cert_storage
+      - type: bind
+        source: ./cert
         target: ./cert
         read_only: true
     depends_on:
@@ -46,10 +46,6 @@ services:
 
 volumes:
   db_data:
-  cert_storage:
-    external: true
-  caddyfile:
-    external: true
 
 networks:
   default:
