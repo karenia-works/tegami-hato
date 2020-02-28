@@ -8,9 +8,11 @@
 
     <ng-template #Close>
       <div class="close">
-        <div class="title">
-          {{ msg.title }}
+        <div class="channel-info">
+          <div class="title">{{ msg.title }}</div>
+          <div class="time info">{{getTime(msg.msgId)}}</div>
         </div>
+
         <div class="abstract info">
           <span *ngIf="!showChannel" class="sender"> {{ msg.senderNickname }}： </span>
           <span *ngIf="showChannel" class="sender"> {{ msg.channel.channelTitle }}： </span>

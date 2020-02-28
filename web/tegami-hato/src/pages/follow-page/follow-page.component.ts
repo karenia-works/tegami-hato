@@ -14,13 +14,14 @@ export class FollowPageComponent implements OnInit {
   channels = recentMessages;
 
   getTime(msgId: string) {
-    let time = moment(decodeTime(msgId));
-    if (moment().diff(time, 'days') < 3)
+    const time = moment(decodeTime(msgId));
+    if (moment().diff(time, 'days') < 3) {
       return time.fromNow();
-    else if(time.isAfter(moment().startOf('year')))
-      return time.format('M/D'); 
-    else
-      return time.format('l'); 
+    } else if (time.isAfter(moment().startOf('year'))) {
+      return time.format('M/D');
+    } else {
+      return time.format('l');
+    }
   }
 
   constructor() { }
