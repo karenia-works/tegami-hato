@@ -1,0 +1,66 @@
+<div class="container">
+  <h1>创建邀请链接</h1>
+  <h3 class="h3">选择有效期限</h3>
+  <div class="area">
+    <div class="line">
+      <input name="time" type="radio" value="1" [(ngModel)]="length" />一个月
+    </div>
+    <div class="line">
+      <input name="time" type="radio" value="3" [(ngModel)]="length" />三个月
+    </div>
+    <div class="line">
+      <input name="time" type="radio" value="5" [(ngModel)]="length" />五个月
+    </div>
+  </div>
+
+  <h3 class="h3">选择邀请者权限</h3>
+  <!-- Receive = 0x01,
+    Send = 0x02,
+    Edit = 0x04,
+    UserManage = 0x08,
+    EditInfo = 0x10, -->
+  <div class="area">
+    <div class="line">
+        <input
+          name="test"
+          type="checkbox"
+          value="1"
+          [(ngModel)]="Receive"
+        />接收群组消息
+      </div>
+      <div class="line">
+        <input
+          name="test"
+          type="checkbox"
+          value="2"
+          [(ngModel)]="Send"
+        />发送通知给群组
+      </div>
+      <div class="line">
+        <input
+          name="test"
+          type="checkbox"
+          value="4"
+          [(ngModel)]="Edit"
+        />编辑群组设置
+      </div>
+      <div class="line">
+        <input
+          name="test"
+          type="checkbox"
+          value="8"
+          [(ngModel)]="UserManage"
+        />管理群组成员
+      </div>
+      <div class="line">
+        <input
+          name="test"
+          type="checkbox"
+          value="10"
+          [(ngModel)]="EditInfo"
+        />编辑群组消息
+      </div>
+    </div>
+
+    <button class="create btn" (click)="create()">创建链接</button> 
+</div>
