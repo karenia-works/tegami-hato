@@ -157,7 +157,7 @@ namespace Karenia.TegamiHato.Server.Services
         /// <param name="count">Count of message, defaults to 20</param>
         /// <param name="ascending">Whether to get messages in time ascending order; default to false</param>
         /// <returns></returns>
-        public async Task<IList<HatoMessage>> GetMessageFromChannelsAsync(ICollection<Ulid> channelIds, Ulid start, int count = 20, bool ascending = false)
+        public async Task<IList<HatoMessage>> GetMessageFromChannelsAsync(ICollection<Ulid> channelIds, Ulid start, int count = 20, bool ascending = false, bool includeChannelName = false)
         {
             if (count > MaxResultPerQuery)
                 throw new ArgumentOutOfRangeException("count", count, $"A query can only check for at most {MaxResultPerQuery} results.");
@@ -183,6 +183,9 @@ namespace Karenia.TegamiHato.Server.Services
             partial = partial
                 .Include(msg => msg.LinkedAttachments).ThenInclude(att => att.Attachment);
             partial = partial.Take(count);
+
+            if (includeChannelName)
+                partial = partial.Include(msg => msg._Channel);
 
             var msgs = await partial.ToListAsync();
             msgs.ForEach(

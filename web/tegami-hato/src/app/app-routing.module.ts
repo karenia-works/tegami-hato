@@ -14,7 +14,12 @@ import { MePageModule } from 'src/pages/me-page/me-page.module';
 import { MePageComponent } from 'src/pages/me-page/me-page.component';
 import { NewsModule } from 'src/pages/news/news.module';
 import { NewsComponent } from 'src/pages/news/news.component';
-
+import { InvitePageModule } from 'src/pages/invite-page/invite-page.module';
+import { InvitePageComponent } from 'src/pages/invite-page/invite-page.component';
+import { PersonalSettingPageModule } from 'src/pages/personal-setting-page/personal-setting-page.module';
+import { PersonalSettingPageComponent } from 'src/pages/personal-setting-page/personal-setting-page.component';
+import { SharePageModule } from 'src/pages/share-page/share-page.module';
+import { SharePageComponent } from 'src/pages/share-page/share-page.component';
 
 const routes: Routes = [
   {
@@ -26,12 +31,20 @@ const routes: Routes = [
     component: FollowPageComponent
   },
   {
+    path: 'invite',
+    component: InvitePageComponent
+  },
+  {
     path: 'channel/:channelId',
     component: GroupPageComponent
   },
   {
     path: 'channel/:channelId/setting',
     component: SettingPageComponent
+  },
+  {
+    path: 'channel/:channelId/share',
+    component: SharePageComponent
   },
   {
     path: 'login',
@@ -44,6 +57,10 @@ const routes: Routes = [
   {
     path: 'news',
     component: NewsComponent
+  },
+  {
+    path: 'me/setting',
+    component: PersonalSettingPageComponent
   }
 ];
 
@@ -56,7 +73,10 @@ const routes: Routes = [
     LoginPageModule,
     SettingPageModule,
     NewsModule,
-    MePageModule
+    MePageModule,
+    InvitePageModule,
+    PersonalSettingPageModule,
+    SharePageModule
   ],
   exports: [RouterModule]
 })

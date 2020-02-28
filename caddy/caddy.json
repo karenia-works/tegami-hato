@@ -1,0 +1,66 @@
+{
+    "admin": {
+        "disabled": true
+    },
+    "apps": {
+        "http": {
+            "servers": {
+                "default": {
+                    "listen": [
+                        "0.0.0.0:80",
+                        "0.0.0.0:443"
+                    ],
+                    "routes": [
+                        {
+                            "match": [
+                                {
+                                    "path": [
+                                        "/api/*",
+                                        "/connect/*"
+                                    ]
+                                }
+                            ],
+                            "handle": [
+                                {
+                                    "handler": "reverse_proxy",
+                                    "upstreams": [
+                                        {
+                                            "dial": "hato_server:80"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "match": [
+                                {
+                                    "path": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "handle": [
+                                {
+                                    "handler": "file_server",
+                                    "root": "/var/www/hato",
+                                }
+                            ]
+                        }
+                    ],
+                    "errors": {
+                        "routes": [
+                            {
+                                "handle": [
+                                    {
+                                        "handler": "static_response",
+                                        "status_code": 400
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

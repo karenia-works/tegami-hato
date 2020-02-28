@@ -1,0 +1,25 @@
+.h3 {
+    margin-bottom: 5px;
+}
+
+.line {
+    display: flex;
+    flex-direction: row;
+
+    .search-box {
+        width: 80%;
+        margin-right: 20px
+    }
+
+    .btn-light {
+        width: 20%;
+        border-color: var(--textbox-border-color, textbox-default-border-color);
+        color: var(--btn-bg-color, btn-default-bg-color);
+
+        &:hover {
+            color: #EC78FF;
+            border-color: #EC78FF;
+            box-shadow: 0 var(--theme-pad-01, 5px) var(--theme-pad-03, 15px) 0 rgba(0, 0, 0, 0.1);
+        }
+    }
+}

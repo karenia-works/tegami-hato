@@ -39,7 +39,8 @@
 
   <div class="share_title">
     <h3>链接分享</h3>
-    <mat-icon svgIcon="plus" class="icon"></mat-icon>
+    <div [routerLink]="'../share'">
+    <mat-icon svgIcon="plus" class="icon" ></mat-icon></div>
   </div>
 
   <div *ngFor="let linkInfo of InvitationLink; let i = index" class="line">

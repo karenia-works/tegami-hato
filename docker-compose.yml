@@ -1,32 +1,56 @@
 version: "3.7"
 services:
+  caddy:
+    image: hato/caddy-web
+    build: web/
+    restart: always
+    volumes:
+      - type: bind
+        source: /root/tegami-hato/caddy
+        target: /tmp/caddyfile
+        read_only: true
+    entrypoint: caddy run --config /tmp/caddyfile/Caddyfile
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - default
+    depends_on:
+      - hato_server
+    environment:
+      - api_address:hato_server
+
   hato_server:
     image: hato/hato_server
     build: server/
     environment:
-      - hato_pgsql=Host=localhost;Database=server_pgsql;Port=5432;Username=postgres;Password=$postgres_password
+      - hato_pgsql=Host=server_pgsql;Database=server_pgsql;Port=5432;Username=postgres;Password=postgres
     env_file: .env
     volumes:
-      - cert_storage:./cert/
-    links:
-      - server_pgsql
+      - type: bind
+        source: /root/tegami-hato/cert
+        target: /app/cert
+        read_only: true
     depends_on:
       - server_pgsql
-    ports:
-      - 80:80
+    networks:
+      - default
 
   server_pgsql:
     image: hato/pgsql_jieba
     environment:
-      - POSTGRES_PASSWORD=$postgres_password
+      - POSTGRES_PASSWORD=postgres
     env_file: .env
     build:
       context: .
       dockerfile: pgsql-jieba.Dockerfile
     volumes:
       - "db_data:/var/lib/postgresql/data"
+    networks:
+      - default
 
 volumes:
   db_data:
-  cert_storage:
-    external: true
+
+networks:
+  default:

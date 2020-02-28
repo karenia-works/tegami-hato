@@ -1,0 +1,16 @@
+# build
+FROM node:12 as BASE
+WORKDIR /app
+COPY ./tegami-hato/package.json /app/
+WORKDIR /app
+RUN yarn
+COPY ./tegami-hato /app/
+RUN yarn build --prod --verbose --progress
+RUN pwd
+RUN ls -la
+
+# serve
+FROM hectormolinero/caddy2:latest as SRV
+COPY --from=BASE /app/dist/tegami-hato /var/www/hato/
+WORKDIR /var/www/hato/
+RUN ls -la
