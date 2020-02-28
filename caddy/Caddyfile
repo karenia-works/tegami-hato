@@ -1,7 +1,11 @@
-{$site_address} {
-    root * /app/web
-    try_files {path} {path}/ index.html
-
-    reverse_proxy /api/* {$api_address}
-    reverse_proxy /connect/* {$api_address}
+:80, :443 {
+    root * /var/www/hato/
+    try_files {path} {path}.html {path}.htm index.html index.htm
+    file_server
+    reverse_proxy /api/* {
+        to hato_server:80
+    }
+    reverse_proxy /connect/* {
+        to hato_server:80
+    }
 }
