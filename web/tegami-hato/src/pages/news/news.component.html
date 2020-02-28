@@ -1,0 +1,15 @@
+<div class="container">
+    <h1># 最新动态</h1>
+    
+    <div class="opr">
+        <app-searchbar [placeholder]="'搜索消息'"></app-searchbar>
+    </div>
+
+    <app-message-list
+        class="list"
+        [list]="channelMessages"
+        [showChannel]="true">
+    </app-message-list>
+    
+  </div>
+  

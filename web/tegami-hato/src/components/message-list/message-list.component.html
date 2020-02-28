@@ -1,6 +1,6 @@
 <div class="info">
   <div
-    *ngFor="let notice of list; let i = index"
+    *ngFor="let msg of list; let i = index"
     class="card"
     (click)="clickToOpen(i)"
   >
@@ -9,11 +9,12 @@
     <ng-template #Close>
       <div class="close">
         <div class="title">
-          {{ notice.title }}
+          {{ msg.title }}
         </div>
         <div class="abstract info">
-          <span class="sender"> {{ notice.senderNickname }}： </span>
-          {{ notice.bodyPlain }}
+          <span *ngIf="!showChannel" class="sender"> {{ msg.senderNickname }}： </span>
+          <span *ngIf="showChannel" class="sender"> {{ msg.channel.channelTitle }}： </span>
+          {{ msg.bodyPlain }}
         </div>
       </div>
     </ng-template>
@@ -21,23 +22,29 @@
     <ng-template #Open>
       <div class="open">
         <div class="title">
-          {{ notice.title }}
+          {{ msg.title }}
         </div>
 
         <div class="info">
+          <div 
+            class="channel" 
+            *ngIf="showChannel"
+            [routerLink]="['/channel', msg.channel.channelId]" >
+            {{ msg.channel.channelTitle }}
+          </div>
           <div class="sender">
-            {{ notice.senderNickname }} &lt; {{ notice.senderEmail }} &gt;
+            {{ msg.senderNickname }} &lt; {{ msg.senderEmail }} &gt;
           </div>
           <div class="time">
-            {{ ulidTime(notice.msgId) | date: "yyyy/MM/dd H:mm" }}
+            {{ ulidTime(msg.msgId) | date: "yyyy/MM/dd H:mm" }}
           </div>
         </div>
 
-        <div class="content" [innerHTML]="notice.bodyHtml">
-          {{ notice.bodyHtml }}
+        <div class="content" [innerHTML]="msg.bodyHtml">
+          {{ msg.bodyHtml }}
         </div>
         <div class="attachments">
-          <div *ngFor="let att of notice.attachments" class="attachment">
+          <div *ngFor="let att of msg.attachments" class="attachment">
             <app-attachment [attachment]="att"></app-attachment>
           </div>
         </div>

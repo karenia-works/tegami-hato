@@ -9,6 +9,7 @@ import { decodeTime } from 'ulid';
 })
 export class MessageListComponent implements OnInit {
   @Input() list;
+  @Input() showChannel = false;
 
   showThis = 0;
   constructor() { }
