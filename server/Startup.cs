@@ -54,7 +54,7 @@ namespace Karenia.TegamiHato.Server
             );
             {
                 var db = services.BuildServiceProvider().GetService<Models.EmailSystemContext>();
-                // db.Database.Migrate();
+                db.Database.Migrate();
             }
 
             services.AddScoped<DatabaseService>();

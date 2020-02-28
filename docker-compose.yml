@@ -4,10 +4,13 @@ services:
     image: hectormolinero/caddy2
     volumes:
       - type: bind
-        source: ./caddy
+        source: /root/tegami-hato/caddy
         target: /tmp/caddyfile
         read_only: true
-    entrypoint: caddy run --config /tmp/caddyfile/Caddyfile
+    entrypoint: caddy run --config /tmp/caddyfile/caddy.json
+    ports:
+      - 80:80
+      - 443:443
     networks:
       - default
     depends_on:
@@ -21,13 +24,11 @@ services:
     env_file: .env
     volumes:
       - type: bind
-        source: ./cert
-        target: ./cert
+        source: /root/tegami-hato/cert
+        target: /app/cert
         read_only: true
     depends_on:
       - server_pgsql
-    ports:
-      - 80:80
     networks:
       - default
 

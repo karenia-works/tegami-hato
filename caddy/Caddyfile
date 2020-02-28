@@ -1,6 +1,7 @@
 {$site_address} {
-    root /app/web
+    root * /app/web
+    try_files {path} {path}/ index.html
+
     reverse_proxy /api/* {$api_address}
     reverse_proxy /connect/* {$api_address}
-    try_files {path} {path}/ index.html
 }
