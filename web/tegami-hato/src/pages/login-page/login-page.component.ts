@@ -38,6 +38,8 @@ export class LoginPageComponent implements OnInit {
   }
 
   login(data) {
+    this.userService.login(data.email);
+
     if (this.returnTo !== undefined) {
       this.router.navigate([this.returnTo]);
     } else {
