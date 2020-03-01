@@ -31,7 +31,7 @@ const routes: Routes = [
     component: FollowPageComponent
   },
   {
-    path: 'invite',
+    path: 'invite/:channelId',
     component: InvitePageComponent
   },
   {

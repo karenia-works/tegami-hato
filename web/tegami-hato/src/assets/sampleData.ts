@@ -107,6 +107,103 @@ export const channelMessages = [
         tags: [],
     }];
 
+export const channelNews = [
+    {
+        msgId: '01E2513B3RVEYBRZSAVH2KKHGR',
+        channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+        timestamp: '2020-02-15T09:28:36.545+00:00',
+        senderEmail: '1261782580@qq.com',
+        senderNickname: '邓莹莹',
+        title: '电路分析第一章课件',
+        bodyPlain: '电路分析第一章课件',
+        bodyHtml: '<p>电路分析第一章课件</p>',
+        channel: {
+          channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+          channelUsername: 'buaasoft_1721',
+          channelTitle: '物联网技术基础2020春',
+          isPublic: true,
+          defaultPermission: '0x02',
+          userNumber: '178'
+        },
+        attachments: [
+        {
+            attachmentId: '01E2A9JWW2RQQ060M93MVSJQ0C',
+            filename: '电路分析第1章（电路模型、电路定律）20.pdf',
+            url: 'https://karenia-space-nano.sfo2.digitaloceanspaces.com/att/%E7%94%B5%E8%B7%AF%E5%88%86%E6%9E%90%E7%AC%AC1%E7%AB%A0%EF%BC%88%E7%94%B5%E8%B7%AF%E6%A8%A1%E5%9E%8B%E3%80%81%E7%94%B5%E8%B7%AF%E5%AE%9A%E5%BE%8B%EF%BC%8920_01E2A9JWW2RQQ060M93MVSJQ0C.pdf',
+            contentType: 'application/pdf',
+            size: 1936990,
+            isAvailable: true
+        }],
+        tags: [],
+    }, {
+        msgId: '01E23DS3BGE9YYKDVZ057JXSYR',
+        channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+        timestamp: '2020-02-15T09:28:36.545+00:00',
+        senderEmail: '1261782580@qq.com',
+        senderNickname: '助教 石泽宏',
+        title: '作业提交说明',
+        bodyPlain: '大家好！第一节课的作业具体信息，在群文件的第一讲中可以找到。 第一次作业的截止时间为3月5日中午12点前！ 作业需要发到公邮 buaa212020@163.com 里！ 请大家交作业时，以"姓名-学号-学院-第一次作业"的格式来命名主题和附件！！ 请大家交作业时，以"姓名-学号-学院-第一次作业"的格式来命名主题和附件！！ 请大家交作业时，以"姓名-学号-学院-第一次作业"的格式来命名主题和附件！！ 谢谢大家配合~ ',
+        bodyHtml: '<p>大家好！第一节课的作业具体信息，在群文件的第一讲中可以找到。</p><p>第一次作业的截止时间为3月5日中午12点前！</p><p>作业需要发到公邮 buaa212020@163.com 里！</p><p>请大家交作业时，以"姓名-学号-学院-第一次作业"的格式来命名主题和附件！！</p><p>请大家交作业时，以"姓名-学号-学院-第一次作业"的格式来命名主题和附件！！</p><p>请大家交作业时，以"姓名-学号-学院-第一次作业"的格式来命名主题和附件！！</p><p>谢谢大家配合~</p>',
+        channel: {
+          channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+          channelUsername: 'buaasoft_1721',
+          channelTitle: '2020春职业规范和企业',
+          isPublic: true,
+          defaultPermission: '0x02',
+          userNumber: '178'
+        },
+        attachments: [],
+        tags: [],
+    }, {
+        msgId: '01E1V4G4W0XXQE8QZ3XX26P3AM',
+        channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+        timestamp: '2020-02-15T09:28:36.545+00:00',
+        senderEmail: '1261782580@qq.com',
+        senderNickname: '康一梅',
+        title: '第一节课的有声课件已上传，可自行下载并学习',
+        bodyPlain: '大家好，进群都把名字改成：学号-姓名。 第一节课的有声课件已上传至北航云盘，可自行下载并学习。 有效期限：2020-06-30 23:59 访问密码：x3YF',
+        bodyHtml: '<p>大家好，进群都把名字改成：学号-姓名。</p><p>第一节课的有声课件已上传至<a href=\'https://bhpan.buaa.edu.cn:443/link/2C5F196A8B090174D654D34E3E7299BB\'>北航云盘</a>，可自行下载并学习。</p><p>有效期限：2020-06-30 23:59</p><p>访问密码：x3YF</p>',
+        channel: {
+          channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+          channelUsername: 'buaasoft_1721',
+          channelTitle: '软件设计模式',
+          isPublic: true,
+          defaultPermission: '0x02',
+          userNumber: '178'
+        },
+        attachments: [],
+        tags: [],
+    }, {
+        msgId: '01E1GKAN6GZ595N2DEP0E515JY',
+        channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+        timestamp: '2020-02-15T09:28:36.545+00:00',
+        senderEmail: '1261782580@qq.com',
+        senderNickname: '费心怡',
+        title: '软件学院2020年春季学期本科生补选课程选课申请表',
+        bodyPlain: '需要补选课程的同学请填写问卷并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。',
+        bodyHtml: '<p>需要补选课程的同学请填写<a href=\'https://docs.qq.com/form/fill/DWUNDeFR3TklsblRK?_w_tencentdocx_form=1\'>问卷</a>并提交，请认真仔细阅读里面的要求，关于重修选课，二选一课程，职业规范课程，里面都有详细说明。问卷截止到明天中午12点。</p>',
+        channel: {
+          channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
+          channelUsername: 'buaasoft_1721',
+          channelTitle: '1721 大班通知',
+          isPublic: true,
+          defaultPermission: '0x02',
+          userNumber: '178'
+        },
+        attachments: [
+          {
+            attachmentId: '01E1BWRVGEV4XD68NJVERG2ZXV',
+            filename: 'Konachan.com.png',
+            url: 'https://karenia-space-nano.sfo2.digitaloceanspaces.com/att/Konachan.com%20-%20299935%202980%20bow%20close%20gradient%20gray_hair%20higuchi_kaede%20long_hair%20nijisanji%20ponytail%20purple_eyes%20school_uniform%20tie%20waifu2x(RGB)(noise_scale)(Level1)(height%202560)_01E1BWRVGEV4XD68NJVERG2ZXV.png',
+            contentType: 'image/jpeg',
+            size: 3012528,
+            isAvailable: true
+          }
+        ],
+        tags: [],
+    }
+];
+
 export const channel = {
   channelId: '01E1K53HW9MXR3D8MTR205MHFZ',
   channelUsername: 'buaasoft_1721',
