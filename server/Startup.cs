@@ -173,11 +173,12 @@ namespace Karenia.TegamiHato.Server
             ILogger<InspectMiddleware> logger2,
             IHostApplicationLifetime lifetime)
         {
-            app.Use(async (ctx, next) =>
-            {
-                await next.Invoke();
-                logger2.LogInformation($"{ctx.Response.StatusCode}:{ctx.Request.Path}{ctx.Request.QueryString}");
-            });
+            if (env.IsDevelopment())
+                app.Use(async (ctx, next) =>
+                {
+                    await next.Invoke();
+                    logger2.LogInformation($"{ctx.Response.StatusCode}:{ctx.Request.Path}{ctx.Request.QueryString}");
+                });
 
             foreach ((var level, var log) in pendingLogs)
             {
