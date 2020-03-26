@@ -173,6 +173,7 @@ namespace Karenia.TegamiHato.Server
             ILogger<InspectMiddleware> logger2,
             IHostApplicationLifetime lifetime)
         {
+            app.UseCors("AcceptAll");
             if (env.IsDevelopment())
                 app.Use(async (ctx, next) =>
                 {
@@ -202,7 +203,6 @@ namespace Karenia.TegamiHato.Server
 
             app.UseAuthorization();
             app.UseAuthentication();
-            app.UseCors("AcceptAll");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

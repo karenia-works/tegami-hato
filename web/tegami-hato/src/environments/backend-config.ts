@@ -4,8 +4,8 @@ export const apiConfig = {
       verification: '/api/user/code/request',
       login: '/connect/token',
       info: {
-        current: '/user/me',
-        any: '/uer/{id}',
+        current: '/api/user/me',
+        any: '/api/user/{id}',
       },
     },
     channel: {
