@@ -157,6 +157,10 @@ namespace Karenia.TegamiHato.Server
             });
             services.AddLocalApiAuthentication();
             services.AddControllers();
+            services.AddCors(x => x.AddPolicy("AcceptAll", builder =>
+            {
+                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+            }));
         }
 
         public class InspectMiddleware { }
@@ -197,7 +201,7 @@ namespace Karenia.TegamiHato.Server
 
             app.UseAuthorization();
             app.UseAuthentication();
-
+            app.UseCors("AcceptAll");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
