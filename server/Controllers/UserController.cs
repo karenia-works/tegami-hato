@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
@@ -60,6 +62,37 @@ namespace Karenia.TegamiHato.Server.Controllers
                 UserId = result.Item2,
                 NewUser = result.Item1
             });
+        }
+
+        [HttpGet]
+        [Route("/me")]
+        [Authorize("api")]
+        public async Task<IActionResult> GetMe()
+        {
+            Ulid _id;
+            {
+                var id = HttpContext.User.Claims.Where(claim => claim.Type == "sub")
+                    .Select(claim => claim.Value)
+                    .Single();
+
+                if (Ulid.TryParse(id, out var res)) _id = res; else return BadRequest();
+            }
+
+            var user = await this.db.GetUser(_id);
+            return Ok(user);
+        }
+
+        [HttpGet]
+        [Route("/{id:Regex(^\\w{{26}}$)}")]
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            Ulid _id;
+            {
+                if (Ulid.TryParse(id, out var res)) _id = res; else return BadRequest();
+            }
+
+            var user = await this.db.GetUser(_id);
+            return Ok(user);
         }
 
         private async Task<FluentEmail.Core.Models.SendResponse> SendLoginCodeAsync(string receiver, string nickname, string code)

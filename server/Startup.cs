@@ -157,6 +157,10 @@ namespace Karenia.TegamiHato.Server
             });
             services.AddLocalApiAuthentication();
             services.AddControllers();
+            services.AddCors(x => x.AddPolicy("AcceptAll", builder =>
+            {
+                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+            }));
         }
 
         public class InspectMiddleware { }
@@ -169,11 +173,12 @@ namespace Karenia.TegamiHato.Server
             ILogger<InspectMiddleware> logger2,
             IHostApplicationLifetime lifetime)
         {
-            app.Use(async (ctx, next) =>
-            {
-                await next.Invoke();
-                logger2.LogInformation($"{ctx.Response.StatusCode}:{ctx.Request.Path}{ctx.Request.QueryString}");
-            });
+            if (env.IsDevelopment())
+                app.Use(async (ctx, next) =>
+                {
+                    await next.Invoke();
+                    logger2.LogInformation($"{ctx.Response.StatusCode}:{ctx.Request.Path}{ctx.Request.QueryString}");
+                });
 
             foreach ((var level, var log) in pendingLogs)
             {
@@ -197,7 +202,7 @@ namespace Karenia.TegamiHato.Server
 
             app.UseAuthorization();
             app.UseAuthentication();
-
+            app.UseCors("AcceptAll");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
