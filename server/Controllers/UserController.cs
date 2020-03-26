@@ -65,7 +65,7 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpGet]
-        [Route("/me")]
+        [Route("me")]
         [Authorize("api")]
         public async Task<IActionResult> GetMe()
         {
@@ -83,7 +83,7 @@ namespace Karenia.TegamiHato.Server.Controllers
         }
 
         [HttpGet]
-        [Route("/{id:Regex(^\\w{{26}}$)}")]
+        [Route("{id:Regex(^\\w{{26}}$)}")]
         public async Task<IActionResult> GetUserById(string id)
         {
             Ulid _id;
