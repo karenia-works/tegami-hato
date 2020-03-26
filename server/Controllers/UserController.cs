@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace Karenia.TegamiHato.Server.Controllers
 {
