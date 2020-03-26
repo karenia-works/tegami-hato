@@ -8,10 +8,10 @@ import { UserService } from "../../services/user.service";
 })
 export class NavbarComponent implements OnInit {
   get isloggedIn() {
-    return this.userService.isLogin;
+    return this.userService.loggedIn;
   }
   get userName() {
-    return this.userService.email;
+    return this.userService.userAccount.email;
   }
 
   constructor(private userService: UserService) {}

@@ -2,8 +2,8 @@
   <div class="login">
     <h1 class="title">登录</h1>
     <form [formGroup]="loginForm" 
-      (ngSubmit)="login(loginForm.value)">
-      <div>
+    (ngSubmit)="login(loginForm.value)">
+    <div>
         <label for="email"><h4 class="label">邮箱</h4></label>
         <div class="row">
           <input id="email" type="text" class="textbox email"
@@ -11,7 +11,7 @@
               formControlName="email">
           <button type="button" 
             class="btn-light code-btn"
-            (click)="vertiCode()">
+            (click)="vertiCode(loginForm.value)">
             获取验证码
           </button>
         </div>
@@ -25,12 +25,11 @@
       <div>
         <label for="code"><h4 class="label">验证码</h4></label>
         <input id="code" type="text" class="textbox"
-            placeholder="123-456-abc-edf"
+            placeholder="请输入验证码"
             formControlName="vertiCode">
       </div>
 
-      <button type="submit" class="btn login-btn"
-        >
+      <button type="submit" class="btn login-btn">
         登录
       </button>
     </form>

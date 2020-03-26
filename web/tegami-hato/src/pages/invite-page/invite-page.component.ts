@@ -21,7 +21,7 @@ export class InvitePageComponent implements OnInit {
   }
 
   acceptInvitation() {
-    if (this.userService.isLogin) {
+    if (this.userService.loggedIn) {
       this.router.navigate(["/channel", "01E1K53HW9MXR3D8MTR205MHFZ"]);
     } else {
       this.router.navigate(["/login"], {

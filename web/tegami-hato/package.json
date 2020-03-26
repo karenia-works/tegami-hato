@@ -23,6 +23,7 @@
     "@angular/platform-browser-dynamic": "~9.0.1",
     "@angular/router": "~9.0.1",
     "@mdi/angular-material": "^4.9.95",
+    "jwt-decode": "^2.2.0",
     "lost": "^8.3.1",
     "lost-grid": "^5.1.6",
     "material": "^0.4.3",

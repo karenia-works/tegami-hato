@@ -33,12 +33,18 @@ export class LoginPageComponent implements OnInit {
     });
   }
 
-  vertiCode() {
-    alert("验证码已发送");
+  async vertiCode(data) {
+    this.userService.verification_code(data.email);
+    alert("验证码已发送至邮箱：" + data.email);
   }
 
-  login(data) {
-    this.userService.login(data.email);
+  async login(data) {
+    let result = await this.userService.login(
+      data.email,
+      data.vertiCode.trim().toUpperCase()
+    );
+
+    alert("logged in!");
 
     if (this.returnTo !== undefined) {
       this.router.navigate([this.returnTo]);
