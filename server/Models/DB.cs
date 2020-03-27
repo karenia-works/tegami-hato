@@ -97,13 +97,13 @@ namespace Karenia.TegamiHato.Server.Models
 
         public string ChannelTitle { get; set; }
 
-        public Ulid MsgId { get; set; }
+        public Ulid? MsgId { get; set; }
 
-        public string BodyPlain { get; set; }
+        public string? BodyPlain { get; set; }
 
         public string? Title { get; set; }
 
-        public string SenderEmail { get; set; }
+        public string? SenderEmail { get; set; }
 
         public string? SenderNickname { get; set; }
     }

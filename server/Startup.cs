@@ -52,6 +52,8 @@ namespace Karenia.TegamiHato.Server
                     );
                 }
             );
+            if (Environment.GetEnvironmentVariable("ef_test") != null) return;
+
             {
                 var db = services.BuildServiceProvider().GetService<Models.EmailSystemContext>();
                 db.Database.Migrate();
