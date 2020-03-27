@@ -3,10 +3,10 @@ import { HttpRequest, HttpHandler, HttpEvent } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, config, Subject } from "rxjs";
 import "rxjs/operators";
-import { apiConfig } from "src/environments/backend-config";
 import { multicast } from "rxjs/operators";
-import { LoginResult, TokenContext, UserAccount } from "src/models/account";
 import { environment } from "src/environments/environment";
+import { apiConfig } from "src/environments/backend-config";
+import { LoginResult, TokenContext, UserAccount } from "src/models/account";
 import { ApiResult } from "src/models/result";
 import qs from "qs";
 import JwtDecode from "jwt-decode";
@@ -169,8 +169,8 @@ export class UserService extends Subject<UserAccount | undefined>
         )
         .toPromise();
       this.userAccount = account;
-      this.saveLoginData();
       this.loggedIn = true;
+      this.saveLoginData();
       return result;
     } catch (e) {
       this.loggedIn = false;

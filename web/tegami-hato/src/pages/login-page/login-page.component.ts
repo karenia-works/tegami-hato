@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder } from "@angular/forms";
-import { UserService } from "../../services/user.service";
+import { UserService } from "../../services/user/user.service";
 import { Router, ActivatedRoute } from "@angular/router";
 
 @Component({
@@ -44,7 +44,7 @@ export class LoginPageComponent implements OnInit {
       data.vertiCode.trim().toUpperCase()
     );
 
-    alert("logged in!");
+    alert("欢迎回来！");
 
     if (this.returnTo !== undefined) {
       this.router.navigate([this.returnTo]);

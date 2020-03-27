@@ -11,7 +11,8 @@ import { MatIconRegistry, MatIconModule } from "@angular/material/icon";
 import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DomSanitizer } from "@angular/platform-browser";
-import { UserInjector, UserService } from "src/services/user.service";
+import { UserInjector, UserService } from "src/services/user/user.service";
+import { MessageService } from "src/services/message/message.service";
 
 @NgModule({
   declarations: [AppComponent, NavbarComponent, FooterComponent],
@@ -22,7 +23,7 @@ import { UserInjector, UserService } from "src/services/user.service";
     HttpClientModule,
     MatIconModule
   ],
-  providers: [UserInjector, UserService],
+  providers: [UserInjector, UserService, MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule {
