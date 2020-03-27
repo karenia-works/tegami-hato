@@ -1,6 +1,6 @@
 import { HttpClient, HttpInterceptor } from "@angular/common/http";
 import { HttpRequest, HttpHandler, HttpEvent } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, Host } from "@angular/core";
 import { Observable, config, Subject } from "rxjs";
 import "rxjs/operators";
 import { multicast } from "rxjs/operators";
@@ -13,6 +13,8 @@ import JwtDecode from "jwt-decode";
 
 @Injectable({ providedIn: "root" })
 export class UserInjector implements HttpInterceptor {
+  constructor() {}
+
   private loggedIn = false;
   private loginResult?: LoginResult = undefined;
 
@@ -26,12 +28,13 @@ export class UserInjector implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    console.log(this);
     if (this.loggedIn) {
-      req.headers.append(
-        "Authorization",
-        `Bearer ${this.loginResult.access_token}`
-      );
+      req = req.clone({
+        headers: req.headers.append(
+          "Authorization",
+          `Bearer ${this.loginResult.access_token}`
+        )
+      });
     }
     return next.handle(req);
   }
@@ -42,7 +45,6 @@ export class UserInjector implements HttpInterceptor {
     }
     tgt.subscribe({
       next: val => {
-        console.log("got new loginresult", val);
         if (val === undefined) {
           this.loggedIn = false;
           this.loginResult = undefined;
@@ -57,15 +59,15 @@ export class UserInjector implements HttpInterceptor {
 }
 
 @Injectable({ providedIn: "root" })
-export class UserService extends Subject<UserAccount | undefined>
-  implements HttpInterceptor {
+export class UserService extends Subject<UserAccount | undefined> {
   constructor(
-    private httpClient: HttpClient // private userInjector: UserInjector
+    @Host() private httpClient: HttpClient,
+    @Host() private userInjector: UserInjector
   ) {
     super();
+    this.userInjector.watch(this.loginResultAnnouncer);
     this.next(undefined);
     this.loadLoginData();
-    // this.userInjector.watch(this.loginResultAnnouncer);
   }
 
   public loggedIn = false;
@@ -73,24 +75,6 @@ export class UserService extends Subject<UserAccount | undefined>
   userAccount?: UserAccount;
 
   loginResultAnnouncer = new Subject<LoginResult | undefined>();
-
-  /**
-   * Intercepts any outgoing HTTP request toward backend and add access token to them
-   * @param req Request
-   */
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    console.log(this);
-    if (this.loggedIn) {
-      req.headers.append(
-        "Authorization",
-        `Bearer ${this.loginResult.access_token}`
-      );
-    }
-    return next.handle(req);
-  }
 
   saveLoginData() {
     if (this.loggedIn) {
@@ -190,30 +174,3 @@ export class UserService extends Subject<UserAccount | undefined>
 export interface UserInfo {
   username: string;
 }
-
-// import { Injectable } from '@angular/core';
-
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class UserService {
-//   isLogin: boolean = false;
-//   email: string = '';
-
-//   constructor() { }
-
-//   login(email: string) {
-//     this.isLogin = true;
-//     this.email = email;
-//     console.log('login successfully')
-//   }
-
-//   getEmail(): string {
-//     return this.email;
-//   }
-
-//   getLogin(): boolean {
-//     return this.isLogin;
-//   }
-
-// }

@@ -23,14 +23,17 @@ import { MessageService } from "src/services/message/message.service";
     HttpClientModule,
     MatIconModule
   ],
-  providers: [UserInjector, UserService, MessageService],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useExisting: UserInjector, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
   constructor(
     matIconRegistry: MatIconRegistry,
     domSanitizer: DomSanitizer,
-    userSrvInjector: UserInjector
+    userSrvInjector: UserInjector,
+    userSrv: UserService
   ) {
     matIconRegistry.addSvgIconSet(
       domSanitizer.bypassSecurityTrustResourceUrl("./assets/mdi.svg")
