@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { decodeTime } from 'ulid';
 import { recentMessages } from '../../assets/sampleData';
+import { MessageService } from '../../services/message/message.service';
 import * as moment from 'moment/moment';
+import { RecentMessageViewItem } from 'src/models/message';
 // import {ulid} from 'ulid';
 
 @Component({
@@ -11,7 +13,9 @@ import * as moment from 'moment/moment';
 })
 
 export class FollowPageComponent implements OnInit {
-  channels = recentMessages;
+  // channels: = recentMessages;
+
+  channels: RecentMessageViewItem[];
 
   getTime(msgId: string) {
     const time = moment(decodeTime(msgId));
@@ -24,11 +28,18 @@ export class FollowPageComponent implements OnInit {
     }
   }
 
-  constructor() { }
+  constructor(
+    private msgService: MessageService
+  ) { }
 
   ngOnInit() {
     moment.locale('zh-cn');
+    this.getRecentMessages();
     // console.log(ulid(new Date('2020/02/19 23:47:02').getTime()));
   }
 
+  getRecentMessages() {
+    this.msgService.getRecentMessages()
+      .subscribe((data: RecentMessageViewItem[]) => this.channels = data);
+  }
 }
